@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
+             xmlns:models="clr-namespace:Sample.Models"
+             xmlns:vm="clr-namespace:Sample.ViewModels"
+             x:Class="Sample.Views.SamplePage"
+             x:DataType="vm:SampleVm"
+             BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333, Default=#fff}">
+    <sam:DataGrid ItemsSource="{Binding Items}"
+                  RowSelectedCommand="{Binding CommandSelectedRow}"
+                  RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
+                  BordersColor="#888"
+                  BordersThickness="1"
+                  Margin="10"
+                  HeaderFontSize="16"
+                  HeaderHorizontalAlignment="Center"
+                  HeaderFontColor="#666"
+                  HeaderBackgroundColor="Black"
+                  CellTextColor="#999">
+        <sam:DataGridColumn Title="First name"
+                            PropertyName="FirstName"/>
+
+        <sam:DataGridColumn Title="Last name"
+                            PropertyName="LastName"/>
+
+        <sam:DataGridColumn Title="Birth date"
+                            Width="100"
+                            PropertyName="BirthDate"
+                            StringFormat="{}{0:dd.MM.yyyy}"
+                            CellHorizontalTextAlignment="Center"
+                            CellVerticalTextAlignment="Center">
+            <sam:DataGridColumn.CellTriggers>
+                <DataTrigger TargetType="sam:Cell"
+                             Binding="{Binding IsOldFag}"
+                             Value="True">
+                    <Setter Property="TextColor" Value="Yellow"/>
+                    <Setter Property="FontAttributes" Value="Bold"/>
+                    <Setter Property="HeightRequest" Value="50"/>
+                </DataTrigger>
+            </sam:DataGridColumn.CellTriggers>
+        </sam:DataGridColumn>
+
+        <!--row triggers-->
+        <sam:DataGrid.RowTriggers>
+            <DataTrigger TargetType="sam:Row"
+                         Binding="{Binding IsAdmin}"
+                         Value="True">
+                <Setter Property="BackgroundColor" Value="#933"/>
+                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="FontSize" Value="18"/>
+            </DataTrigger>
+
+            <DataTrigger TargetType="sam:Row"
+                         Binding="{Binding IsManager}"
+                         Value="True">
+                <Setter Property="BackgroundColor" Value="#225"/>
+                <Setter Property="TextColor" Value="White"/>
+            </DataTrigger>
+        </sam:DataGrid.RowTriggers>
+    </sam:DataGrid>
+</ContentPage>
