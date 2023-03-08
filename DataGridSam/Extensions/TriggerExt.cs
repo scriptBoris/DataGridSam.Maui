@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls;
+﻿using DataGridSam.Internal;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Platform;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,33 +9,74 @@ using System.Threading.Tasks;
 
 namespace DataGridSam.Extensions
 {
-    // todo Нужно ли клонирование триггеров?
     internal static class TriggerExt
     {
-        internal static TriggerBase Clone(this TriggerBase trigger)
+        internal static void InitTrigger(this IDataTrigger trigger, DataGrid dataGrid)
         {
-            return trigger;
-            switch (trigger)
-            {
-                case DataTrigger dt:
-                    return dt.Clone();
+            object? csharpValue = null;
+            trigger.DataGrid = dataGrid;
 
-                default:
-                    throw new NotSupportedException();
+            if (trigger.Value is string s)
+            {
+                if (string.Equals(s, "true", StringComparison.OrdinalIgnoreCase))
+                {
+                    csharpValue = true;
+                }
+                else if (string.Equals(s, "false", StringComparison.OrdinalIgnoreCase))
+                {
+                    csharpValue = false;
+                }
+            }
+
+            trigger.CSharpValue = csharpValue;
+        }
+
+        internal static void InitTriggers(this IEnumerable<IDataTrigger> triggers, DataGrid dataGrid)
+        {
+            foreach (var item in triggers)
+            {
+                item.InitTrigger(dataGrid);
             }
         }
 
-        internal static DataTrigger Clone(this DataTrigger trigger)
+        internal static bool IsEqualValue(this IDataTrigger trigger, object? value)
         {
-            Type type = trigger.GetType();
-            var clone = (DataTrigger)Activator.CreateInstance(type, trigger.TargetType)!;
-            clone.Binding = trigger.Binding;
-            clone.Value = trigger.Value;
+            bool isEqualValue = false;
+            
+            if (trigger.CSharpValue != null)
+            {
+                isEqualValue = trigger.CSharpValue.Equals(value);
+            }
+            else
+            {
+                isEqualValue = trigger.Value?.Equals(value) ?? false;
+            }
 
-            foreach (var item in trigger.Setters)
-                clone.Setters.Add(item);
+            return isEqualValue;
+        }
 
-            return clone;
+        internal static object? FirstNonNull(this IEnumerable<IDataTrigger> triggers, Func<IDataTrigger, object?> select)
+        {
+            foreach (var item in triggers)
+            {
+                var res = select(item);
+
+                if (res != null)
+                    return res;
+            }
+            return null;
+        }
+
+        internal static T? FirstNonNull<T>(this IEnumerable<IDataTrigger> triggers, Func<IDataTrigger, T?> select)
+        {
+            foreach (var item in triggers)
+            {
+                var res = select(item);
+
+                if (res is T t)
+                    return t;
+            }
+            return default;
         }
     }
 }

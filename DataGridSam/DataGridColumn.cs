@@ -76,30 +76,31 @@ namespace DataGridSam
             set => SetValue(WidthProperty, value);
         }
 
+        // todo Использовать кастомную реализацию триггеров (потом) (наверное?)
         // cell triggers
-        public static readonly BindableProperty CellTriggersProperty = BindableProperty.Create(
-            nameof(CellTriggers),
-            typeof(IList<TriggerBase>),
-            typeof(DataGridColumn),
-            defaultValueCreator: b =>
-            {
-                var list = new ObservableCollection<TriggerBase>();
-                list.CollectionChanged += ((DataGridColumn)b).List_CollectionChanged;
-                return list;
-            }
-        );
-        private void List_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            foreach (var item in CellTriggers)
-                if (item.TargetType != typeof(Cell))
-                {
-                    Debug.WriteLine($"{nameof(DataGridSam.DataGrid)}: all RowTriggers must contain TargetType as Cell", "**CRITICAL ERROR**");
-                    throw new Exception($"{nameof(DataGridSam.DataGrid)}: all RowTriggers must contain TargetType as Cell");
-                }
+        //public static readonly BindableProperty CellTriggersProperty = BindableProperty.Create(
+        //    nameof(CellTriggers),
+        //    typeof(IList<TriggerBase>),
+        //    typeof(DataGridColumn),
+        //    defaultValueCreator: b =>
+        //    {
+        //        var list = new ObservableCollection<TriggerBase>();
+        //        list.CollectionChanged += ((DataGridColumn)b).List_CollectionChanged;
+        //        return list;
+        //    }
+        //);
+        //private void List_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        //{
+        //    foreach (var item in CellTriggers)
+        //        if (item.TargetType != typeof(Cell))
+        //        {
+        //            Debug.WriteLine($"{nameof(DataGridSam.DataGrid)}: all RowTriggers must contain TargetType as Cell", "**CRITICAL ERROR**");
+        //            throw new Exception($"{nameof(DataGridSam.DataGrid)}: all RowTriggers must contain TargetType as Cell");
+        //        }
 
-            DataGrid?.Draw();
-        }
-        public IList<TriggerBase> CellTriggers => (IList<TriggerBase>)GetValue(CellTriggersProperty);
+        //    DataGrid?.Draw();
+        //}
+        //public IList<TriggerBase> CellTriggers => (IList<TriggerBase>)GetValue(CellTriggersProperty);
 
         // cell background color
         public static readonly BindableProperty CellBackgroundColorProperty = BindableProperty.Create(

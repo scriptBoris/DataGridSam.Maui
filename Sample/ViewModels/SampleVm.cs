@@ -29,14 +29,22 @@ namespace Sample.ViewModels
             }
         });
 
-        public ICommand CommandLongSelectedRow => new Command(x =>
+        public ICommand CommandLongSelectedRow => new Command(async x =>
         {
             if (x is User user)
             {
-                App.Current?.MainPage?.DisplayAlert(
-                    "Long selected",
-                    $"{user.FirstName} {user.LastName}, rank {user.Rank}",
-                    "OK");
+                const string cancel = "Cancel";
+
+                string[] items = Enum.GetValues<Ranks>()
+                    .Select(x => x.ToString())
+                    .ToArray();
+
+                string? res = await App.Current?.MainPage?.DisplayActionSheet("Select rank", cancel, null!, items);
+                if (res == null || res == cancel)
+                    return;
+
+                var newRank = Enum.Parse<Ranks>(res);
+                user.Rank = newRank;
             }
         });
     }

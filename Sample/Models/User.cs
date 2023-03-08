@@ -1,4 +1,6 @@
-﻿using Sample.Core;
+﻿using DataGridSam;
+using PropertyChanged;
+using Sample.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +16,14 @@ namespace Sample.Models
         public required string LastName { get; set; }
         public Ranks Rank { get; set; }
         public string? PhotoUrl { get; set; }
-        
+
+        [DependsOn(nameof(BirthDate))]
         public bool IsOldFag => BirthDate.Year <= 1980;
+
+        [DependsOn(nameof(Rank))]
         public bool IsAdmin => Rank == Ranks.Admin;
+        
+        [DependsOn(nameof(Rank))]
         public bool IsManager => Rank == Ranks.Manager;
     }
 

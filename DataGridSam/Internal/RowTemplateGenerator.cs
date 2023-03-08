@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataGridSam.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -12,8 +13,11 @@ namespace DataGridSam.Internal
     {
         internal DataTemplate Generate(DataGrid dataGrid)
         {
+            int totalTriggerCount = dataGrid.RowTriggers.Count;
             var columns = dataGrid.Columns;
-            var rowTriggers = dataGrid.RowTriggers;
+            var triggers = dataGrid.RowTriggers;
+
+            triggers.InitTriggers(dataGrid);
 
             var template = new DataTemplate();
             template.LoadTemplate = () =>
@@ -28,6 +32,8 @@ namespace DataGridSam.Internal
                         button = new DGButton()
                         {
                             CornerRadius = 0,
+                            Padding = 0,
+                            Margin = 0,
                             BackgroundColor = Colors.Transparent,
                             Command = dataGrid.RowSelectedCommand,
                             CommandLongClick = dataGrid.RowLongSelectedCommand,
@@ -49,11 +55,7 @@ namespace DataGridSam.Internal
                         row.SetColumnSpan(button, columns.Count);
 
                     // row triggers
-                    if (rowTriggers.Count > 0)
-                    {
-                        foreach (var rowTrigger in rowTriggers)
-                            row.Triggers.Add(rowTrigger);
-                    }
+                    row.SetTriggers(triggers, totalTriggerCount);
 
                     row.ColumnDefinitions = colDef;
                     row.Draw();

@@ -23,6 +23,8 @@ namespace DataGridSam
             {
                 var label = new Label
                 {
+                    VerticalOptions = LayoutOptions.Fill,
+                    HorizontalOptions = LayoutOptions.Fill,
                 };
                 Content = label;
                 label.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
@@ -33,9 +35,6 @@ namespace DataGridSam
                 custom?.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
                 Content = custom;
             }
-
-            foreach (var cellTrigger in column.CellTriggers)
-                Triggers.Add(cellTrigger);
         }
 
         #region bindable props
@@ -126,11 +125,16 @@ namespace DataGridSam
 
         public void Draw()
         {
-            base.BackgroundColor = ResolveProperty<Color>(
+            var bg = ResolveProperty<Color>(
                 BackgroundColor,
                 row.BackgroundColor,
                 column.CellBackgroundColor,
                 column.DataGrid!.CellBackgroundColor);
+
+            if (bg == row.BackgroundColor)
+                bg = Colors.Transparent;
+
+            base.BackgroundColor = bg;
 
             if (Content is Label label)
             {
@@ -169,6 +173,24 @@ namespace DataGridSam
                     column.DataGrid!.CellHorizontalTextAlignment
                 );
             }
+        }
+
+        public static T ResolveProperty<T>(object? value1, object elseValue)
+        {
+            if (value1 is T T1)
+                return T1;
+            else
+                return (T)elseValue;
+        }
+
+        public static T ResolveProperty<T>(object? value1, object? value2, object elseValue)
+        {
+            if (value1 is T T1)
+                return T1;
+            else if (value2 is T T2)
+                return T2;
+            else
+                return (T)elseValue;
         }
 
         public T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue)

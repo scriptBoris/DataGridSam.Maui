@@ -15,9 +15,10 @@
                   Margin="10"
                   HeaderFontSize="16"
                   HeaderHorizontalAlignment="Center"
-                  HeaderTextColor="#666"
+                  HeaderTextColor="#999"
                   HeaderBackgroundColor="Black"
-                  CellTextColor="#999">
+                  CellTextColor="#777"
+                  CellBackgroundColor="#CCC">
         <sam:DataGridColumn Title="First name"
                             PropertyName="FirstName"/>
 
@@ -28,9 +29,8 @@
                             Width="100"
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}"
-                            CellHorizontalTextAlignment="Center"
-                            CellVerticalTextAlignment="Center">
-            <sam:DataGridColumn.CellTriggers>
+                            CellHorizontalTextAlignment="End">
+            <!--<sam:DataGridColumn.CellTriggers>
                 <DataTrigger TargetType="sam:Cell"
                              Binding="{Binding IsOldFag}"
                              Value="True">
@@ -38,25 +38,21 @@
                     <Setter Property="FontAttributes" Value="Bold"/>
                     <Setter Property="HeightRequest" Value="50"/>
                 </DataTrigger>
-            </sam:DataGridColumn.CellTriggers>
+            </sam:DataGridColumn.CellTriggers>-->
         </sam:DataGridColumn>
 
         <!--row triggers-->
         <sam:DataGrid.RowTriggers>
-            <DataTrigger TargetType="sam:Row"
-                         Binding="{Binding IsAdmin}"
-                         Value="True">
-                <Setter Property="BackgroundColor" Value="#933"/>
-                <Setter Property="TextColor" Value="White"/>
-                <Setter Property="FontSize" Value="18"/>
-            </DataTrigger>
+            <sam:RowTrigger Binding="{Binding IsAdmin}"
+                            Value="True"
+                            BackgroundColor="#833"
+                            TextColor="White"
+                            FontSize="18"/>
 
-            <DataTrigger TargetType="sam:Row"
-                         Binding="{Binding IsManager}"
-                         Value="True">
-                <Setter Property="BackgroundColor" Value="#225"/>
-                <Setter Property="TextColor" Value="White"/>
-            </DataTrigger>
+            <sam:RowTrigger Binding="{Binding IsManager}"
+                            Value="True"
+                            BackgroundColor="#225"
+                            TextColor="White"/>
         </sam:DataGrid.RowTriggers>
     </sam:DataGrid>
 </ContentPage>

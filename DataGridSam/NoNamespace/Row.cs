@@ -1,5 +1,9 @@
-﻿using System;
+﻿using DataGridSam.Extensions;
+using DataGridSam.Internal;
+using Microsoft.Maui.Controls;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -7,105 +11,96 @@ using System.Threading.Tasks;
 
 namespace DataGridSam
 {
-    public class Row : Grid
+    public class Row : Grid, IDataTriggerHost
     {
         private readonly DataGridColumn[] cols;
         private readonly Cell[] cells;
+        private readonly List<IDataTrigger> enabledTriggers = new();
+        private INotifyPropertyChanged? lastContext;
+        private IEnumerable<IDataTrigger>? triggers;
+        private int totalTriggerCount;
 
         public Row(int columns)
         {
+            RowDefinitions = new() { new() { Height = GridLength.Auto } };
             ColumnSpacing = 0;
             cells = new Cell[columns];
             cols = new DataGridColumn[columns];
         }
 
-        internal bool IsDrawed { get; set; }
+        public Color? TextColor { get; set; }
+        public double? FontSize { get; set; }
+        public FontAttributes? FontAttributes { get; set; }
+        public TextAlignment? VerticalTextAlignment { get; set; }
+        public TextAlignment? HorizontalTextAlignment { get; set; }
 
-        #region bindable props
-        // background color
-        public static new readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
-            nameof(BackgroundColor),
-            typeof(Color),
-            typeof(Row),
-            null,
-            propertyChanged: Draw
-        );
-        public new Color? BackgroundColor
+        protected override void OnBindingContextChanged()
         {
-            get => GetValue(BackgroundColorProperty) as Color;
-            set => SetValue(BackgroundColorProperty, value);
+            base.OnBindingContextChanged();
+
+            if (lastContext != null)
+                lastContext.PropertyChanged -= Notify_PropertyChanged;
+
+            if (BindingContext is INotifyPropertyChanged notify)
+            {
+                notify.PropertyChanged += Notify_PropertyChanged;
+                lastContext = notify;
+            }
+            else
+            {
+                lastContext = null;
+            }
+
+            enabledTriggers.Clear();
+            UpdateTriggers();
         }
 
-        // text color
-        public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
-            nameof(TextColor),
-            typeof(Color),
-            typeof(Row),
-            null,
-            propertyChanged: Draw
-        );
-        public Color? TextColor
+        private void Notify_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            get => GetValue(TextColorProperty) as Color;
-            set => SetValue(TextColorProperty, value);
+            if (totalTriggerCount == 0)
+                return;
+
+            foreach (var item in triggers!)
+            {
+                var binding = item.Binding as Binding;
+                if (binding == null)
+                    throw new NotSupportedException();
+
+                if (e.PropertyName == binding.Path)
+                {
+                    object? value = BindingContext?.GetValueFromProperty(binding.Path);
+                    View view;
+                    if (item.CellTriggerId != null)
+                        view = cells[item.CellTriggerId.Value];
+                    else
+                        view = this;
+
+                    if (view is IDataTriggerHost h)
+                        h.Execute(item, value);
+                }
+            }
         }
 
-        // font size
-        public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(
-            nameof(FontSize),
-            typeof(double?),
-            typeof(Row),
-            null, 
-            propertyChanged: Draw
-        );
-        public double? FontSize
+        private void UpdateTriggers()
         {
-            get => GetValue(FontSizeProperty) as double?;
-            set => SetValue(FontSizeProperty, value);
-        }
+            foreach (var item in triggers!)
+            {
+                var binding = item.Binding as Binding;
+                if (binding == null)
+                    throw new NotSupportedException();
 
-        // font attributes
-        public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create(
-            nameof(FontAttributes),
-            typeof(FontAttributes?),
-            typeof(Row),
-            null,
-            propertyChanged: Draw
-        );
-        public FontAttributes? FontAttributes
-        {
-            get => GetValue(FontAttributesProperty) as FontAttributes?;
-            set => SetValue(FontAttributesProperty, value);
-        }
+                object? value = BindingContext?.GetValueFromProperty(binding.Path);
 
-        // vertical text alignment
-        public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create(
-            nameof(VerticalTextAlignment),
-            typeof(TextAlignment?),
-            typeof(Row),
-            null,
-            propertyChanged: Draw
-        );
-        public TextAlignment? VerticalTextAlignment
-        {
-            get => GetValue(VerticalTextAlignmentProperty) as TextAlignment?;
-            set => SetValue(VerticalTextAlignmentProperty, value);
-        }
+                View view;
+                if (item.CellTriggerId != null)
+                    view = cells[item.CellTriggerId.Value];
+                else
+                    view = this;
 
-        // horizontal text alignment
-        public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create(
-            nameof(HorizontalTextAlignment),
-            typeof(TextAlignment?),
-            typeof(Row),
-            null,
-            propertyChanged: Draw
-        );
-        public TextAlignment? HorizontalTextAlignment
-        {
-            get => GetValue(HorizontalTextAlignmentProperty) as TextAlignment?;
-            set => SetValue(HorizontalTextAlignmentProperty, value);
+                if (view is IDataTriggerHost h)
+                    h.Execute(item, value);
+            }
         }
-        #endregion bindable props
 
         public void InitCell(DataGridColumn col)
         {
@@ -119,18 +114,40 @@ namespace DataGridSam
             this.Add(cell);
         }
 
+        internal void SetTriggers(IEnumerable<IDataTrigger> triggers, int totalTriggerCount)
+        {
+            this.triggers = triggers;
+            this.totalTriggerCount = totalTriggerCount;
+        }
+
         public void Draw()
         {
             foreach (var cell in cells)
                 cell.Draw();
-
-            IsDrawed = true;
         }
 
-        private static void Draw(BindableObject b, object o, object n)
+        void IDataTriggerHost.Execute(IDataTrigger trigger, object? value)
         {
-            if (b is Row self)
-                self.Draw();
+            bool isEnabled = trigger.IsEqualValue(value);
+
+            if (isEnabled)
+            {
+                if (!enabledTriggers.Contains(trigger))
+                    enabledTriggers.Add(trigger);
+            }
+            else
+            {
+                enabledTriggers.Remove(trigger);
+            }
+
+            BackgroundColor = enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+            TextColor = enabledTriggers.FirstNonNull(x => x.TextColor);
+            FontSize = enabledTriggers.FirstNonNull(x => x.FontSize);
+            FontAttributes = enabledTriggers.FirstNonNull(x => x.FontAttributes);
+            VerticalTextAlignment = enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
+            HorizontalTextAlignment = enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
+
+            Draw();
         }
     }
 }

@@ -356,27 +356,20 @@ namespace DataGridSam
         // row triggers
         public static readonly BindableProperty RowTriggersProperty = BindableProperty.Create(
             nameof(RowTriggers),
-            typeof(IList<TriggerBase>),
+            typeof(IList<RowTrigger>),
             typeof(DataGrid),
             defaultValueCreator: (b) =>
             {
-                var list = new ObservableCollection<TriggerBase>();
+                var list = new ObservableCollection<RowTrigger>();
                 list.CollectionChanged += ((DataGrid)b).RowTriggers_CollectionChanged;
                 return list;
             }
         );
         private void RowTriggers_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            foreach (var item in RowTriggers)
-                if (item.TargetType != typeof(Row))
-                {
-                    Debug.WriteLine($"{nameof(DataGrid)}: all RowTriggers must contain TargetType as Row", "**CRITICAL ERROR**");
-                    throw new Exception($"{nameof(DataGrid)}: all RowTriggers must contain TargetType as Row");
-                }
-
             Draw();
         }
-        public IList<TriggerBase> RowTriggers => (IList<TriggerBase>)GetValue(RowTriggersProperty);
+        public IList<RowTrigger> RowTriggers => (IList<RowTrigger>)GetValue(RowTriggersProperty);
         #endregion bindable props
 
         protected override void OnParentSet()
