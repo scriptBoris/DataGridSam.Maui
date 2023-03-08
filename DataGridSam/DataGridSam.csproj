@@ -16,7 +16,7 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<Nullable>enable</Nullable>
-		<PackageId>datagridsam.maui</PackageId>
+		<PackageId>DataGridSam.Maui</PackageId>
 		<Title>DataGridSam.Maui</Title>
 		<Version>0.9.0-beta</Version>
 		<Authors>Boris Krit</Authors>
@@ -25,6 +25,7 @@
 		<PackageTags>DataGrid, Maui</PackageTags>
 		<RepositoryUrl>https://github.com/scriptBoris/DataGridSam.Maui</RepositoryUrl>
 		<PackageProjectUrl>https://github.com/scriptBoris/DataGridSam.Maui</PackageProjectUrl>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 </Project>
