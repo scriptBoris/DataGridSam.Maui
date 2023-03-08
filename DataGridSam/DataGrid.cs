@@ -269,6 +269,20 @@ namespace DataGridSam
             set => SetValue(HeaderVerticalAlignmentProperty, value);
         }
 
+        // cell background color
+        public static readonly BindableProperty CellBackgroundColorProperty = BindableProperty.Create(
+            nameof(CellBackgroundColor),
+            typeof(Color),
+            typeof(DataGrid),
+            Colors.White,
+            propertyChanged: Draw
+        );
+        public Color CellBackgroundColor
+        {
+            get => (Color)GetValue(CellBackgroundColorProperty);
+            set => SetValue(CellBackgroundColorProperty, value);
+        }
+
         // cell text color
         public static readonly BindableProperty CellTextColorProperty = BindableProperty.Create(
             nameof(CellTextColor),

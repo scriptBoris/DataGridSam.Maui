@@ -103,6 +103,34 @@ namespace DataGridSam
         }
         public IList<TriggerBase> CellTriggers => (IList<TriggerBase>)GetValue(CellTriggersProperty);
 
+        // cell background color
+        public static readonly BindableProperty CellBackgroundColorProperty = BindableProperty.Create(
+            nameof(CellBackgroundColor),
+            typeof(Color),
+            typeof(DataGridColumn),
+            null,
+            propertyChanged: Draw
+        );
+        public Color? CellBackgroundColor
+        {
+            get => GetValue(CellBackgroundColorProperty) as Color;
+            set => SetValue(CellBackgroundColorProperty, value);
+        }
+
+        // cell template
+        public static readonly BindableProperty CellTemplateProperty = BindableProperty.Create(
+            nameof(CellTemplate),
+            typeof(DataTemplate),
+            typeof(DataGridColumn),
+            null,
+            propertyChanged: Draw
+        );
+        public DataTemplate? CellTemplate
+        {
+            get => GetValue(CellTemplateProperty) as DataTemplate;
+            set => SetValue(CellTemplateProperty, value);
+        }
+
         // cell text color
         public static readonly BindableProperty CellTextColorProperty = BindableProperty.Create(
             nameof(CellTextColor),

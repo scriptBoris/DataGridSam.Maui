@@ -18,24 +18,26 @@ namespace DataGridSam
         {
             this.column = column;
             this.row = row;
-            Content = new Label
-            {
-                // todo исправить на стили
-                //HorizontalTextAlignment = column.ResolveProperty<TextAlignment>(
-                //    DataGridColumn.CellHorizontalTextAlignmentProperty,
-                //    DataGrid.CellHorizontalTextAlignmentProperty),
 
-                //VerticalTextAlignment = column.ResolveProperty<TextAlignment>(
-                //    DataGridColumn.CellVerticalTextAlignmentProperty,
-                //    DataGrid.CellVerticalTextAlignmentProperty
-                //),
-            };
+            if (column.CellTemplate == null)
+            {
+                var label = new Label
+                {
+                };
+                Content = label;
+                label.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+            }
+            else
+            {
+                var custom = column.CellTemplate.CreateContent() as View;
+                custom?.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+                Content = custom;
+            }
+
+            BackgroundColor = null;
 
             foreach (var cellTrigger in column.CellTriggers)
                 Triggers.Add(cellTrigger);
-
-            if (Content is Label label)
-                label.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
         }
 
         #region bindable props
@@ -118,6 +120,12 @@ namespace DataGridSam
 
         public void Draw()
         {
+            this.BackgroundColor = ResolveProperty<Color>(
+                BackgroundColor,
+                row.BackgroundColor,
+                column.CellBackgroundColor,
+                column.DataGrid!.CellBackgroundColor);
+
             if (Content is Label label)
             {
                 label.TextColor = ResolveProperty<Color>(

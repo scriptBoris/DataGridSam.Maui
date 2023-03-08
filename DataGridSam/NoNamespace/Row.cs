@@ -17,6 +17,7 @@ namespace DataGridSam
             ColumnSpacing = 0;
             cells = new Cell[columns];
             cols = new DataGridColumn[columns];
+            BackgroundColor = null;
         }
 
         internal bool IsDrawed { get; set; }
@@ -105,18 +106,18 @@ namespace DataGridSam
             this.Add(cell);
         }
 
-        private static void Draw(BindableObject b, object o, object n)
-        {
-            if (b is Row self)
-                self.Draw();
-        }
-
         public void Draw()
         {
             foreach (var cell in cells)
                 cell.Draw();
 
             IsDrawed = true;
+        }
+
+        private static void Draw(BindableObject b, object o, object n)
+        {
+            if (b is Row self)
+                self.Draw();
         }
     }
 }
