@@ -15,7 +15,7 @@
                   Margin="10"
                   HeaderFontSize="16"
                   HeaderHorizontalAlignment="Center"
-                  HeaderFontColor="#666"
+                  HeaderTextColor="#666"
                   HeaderBackgroundColor="Black"
                   CellTextColor="#999">
         <sam:DataGridColumn Title="First name"

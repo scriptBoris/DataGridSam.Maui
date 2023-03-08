@@ -17,12 +17,25 @@ namespace DataGridSam
             ColumnSpacing = 0;
             cells = new Cell[columns];
             cols = new DataGridColumn[columns];
-            BackgroundColor = null;
         }
 
         internal bool IsDrawed { get; set; }
 
         #region bindable props
+        // background color
+        public static new readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
+            nameof(BackgroundColor),
+            typeof(Color),
+            typeof(Row),
+            null,
+            propertyChanged: Draw
+        );
+        public new Color? BackgroundColor
+        {
+            get => GetValue(BackgroundColorProperty) as Color;
+            set => SetValue(BackgroundColorProperty, value);
+        }
+
         // text color
         public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
             nameof(TextColor),

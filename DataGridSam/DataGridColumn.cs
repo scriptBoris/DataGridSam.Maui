@@ -20,7 +20,8 @@ namespace DataGridSam
             nameof(PropertyName),
             typeof(string),
             typeof(DataGridColumn),
-            null
+            null,
+            propertyChanged: Draw
         );
         public string? PropertyName
         {
@@ -28,12 +29,13 @@ namespace DataGridSam
             set => SetValue(PropertyNameProperty, value);
         }
 
-        // property name
+        // title
         public static readonly BindableProperty TitleProperty = BindableProperty.Create(
             nameof(Title),
             typeof(string),
             typeof(DataGridColumn),
-            null
+            null,
+            propertyChanged: Draw
         );
         public string? Title
         {
@@ -65,11 +67,7 @@ namespace DataGridSam
             typeof(GridLength),
             typeof(DataGridColumn),
             GridLength.Star,
-            propertyChanged: (b, o, n) =>
-            {
-                if (b is DataGridColumn self)
-                    self.DataGrid?.DrawColumn(self, DrawType.Edit, self.Index);
-            }
+            propertyChanged: Draw
         );
         [TypeConverter(typeof(GridLengthTypeConverter))]
         public GridLength Width

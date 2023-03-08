@@ -34,13 +34,25 @@ namespace DataGridSam
                 Content = custom;
             }
 
-            BackgroundColor = null;
-
             foreach (var cellTrigger in column.CellTriggers)
                 Triggers.Add(cellTrigger);
         }
 
         #region bindable props
+        // background color
+        public static new readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
+            nameof(BackgroundColor),
+            typeof(Color),
+            typeof(Cell),
+            null,
+            propertyChanged: Draw
+        );
+        public new Color? BackgroundColor
+        {
+            get => GetValue(BackgroundColorProperty) as Color;
+            set => SetValue(BackgroundColorProperty, value);
+        }
+
         // text color
         public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
             nameof(TextColor),
@@ -112,15 +124,9 @@ namespace DataGridSam
         }
         #endregion bindable props
 
-        public static void Draw(BindableObject b, object o, object n)
-        {
-            if (b is Cell cell)
-                cell.Draw();
-        }
-
         public void Draw()
         {
-            this.BackgroundColor = ResolveProperty<Color>(
+            base.BackgroundColor = ResolveProperty<Color>(
                 BackgroundColor,
                 row.BackgroundColor,
                 column.CellBackgroundColor,
@@ -175,6 +181,12 @@ namespace DataGridSam
                 return columnT;
             else
                 return (T)dataGridValue;
+        }
+
+        public static void Draw(BindableObject b, object o, object n)
+        {
+            if (b is Cell cell)
+                cell.Draw();
         }
     }
 }

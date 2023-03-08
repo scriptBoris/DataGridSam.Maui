@@ -197,22 +197,22 @@ namespace DataGridSam
             set => SetValue(HeaderFontSizeProperty, value);
         }
 
-        // header font color
-        public static readonly BindableProperty HeaderFontColorProperty = BindableProperty.Create(
-            nameof(HeaderFontColor),
+        // header text color
+        public static readonly BindableProperty HeaderTextColorProperty = BindableProperty.Create(
+            nameof(HeaderTextColor),
             typeof(Color),
             typeof(DataGrid),
             Colors.Black,
             propertyChanged: (b, o, n) =>
             {
                 if (b is DataGrid self)
-                    self._header.HeaderFontColor = (Color)n;
+                    self._header.HeaderTextColor = (Color)n;
             }
         );
-        public Color HeaderFontColor
+        public Color HeaderTextColor
         {
-            get => (Color)GetValue(HeaderFontColorProperty);
-            set => SetValue(HeaderFontColorProperty, value);
+            get => (Color)GetValue(HeaderTextColorProperty);
+            set => SetValue(HeaderTextColorProperty, value);
         }
 
         // header background color

@@ -12,7 +12,7 @@ namespace DataGridSam.Internal
         private readonly BoxView _underline;
         private Color _borderColor;
         private double _headerFontSize;
-        private Color _headerFontColor;
+        private Color _headerTextColor;
         private Color _headerBackgroundColor;
         private TextAlignment _headerHorizontalAlignment;
         private TextAlignment _headerVerticalAlignment;
@@ -35,7 +35,7 @@ namespace DataGridSam.Internal
 
             HeaderFontSize = (double)DataGrid.HeaderFontSizeProperty.DefaultValue;
             BorderColor = (Color)DataGrid.BordersColorProperty.DefaultValue;
-            HeaderFontColor = (Color)DataGrid.HeaderFontColorProperty.DefaultValue;
+            HeaderTextColor = (Color)DataGrid.HeaderTextColorProperty.DefaultValue;
             HeaderBackgroundColor = (Color)DataGrid.HeaderBackgroundColorProperty.DefaultValue;
             HeaderHorizontalAlignment = (TextAlignment)DataGrid.HeaderHorizontalAlignmentProperty.DefaultValue;
             HeaderVerticalAlignment = (TextAlignment)DataGrid.HeaderVerticalAlignmentProperty.DefaultValue;
@@ -74,12 +74,12 @@ namespace DataGridSam.Internal
             }
         }
 
-        internal Color HeaderFontColor
+        internal Color HeaderTextColor
         {
-            get => _headerFontColor;
+            get => _headerTextColor;
             set
             {
-                _headerFontColor = value;
+                _headerTextColor = value;
                 foreach (var item in _views)
                     item.TextColor = value;
             }
@@ -164,7 +164,7 @@ namespace DataGridSam.Internal
             var label = new Label();
             label.SetBinding(Label.TextProperty, new Binding(nameof(DataGridColumn.Title), source: col));
             label.FontSize = HeaderFontSize;
-            label.TextColor = HeaderFontColor;
+            label.TextColor = HeaderTextColor;
             label.BackgroundColor = HeaderBackgroundColor;
             label.VerticalTextAlignment = HeaderVerticalAlignment;
             label.HorizontalTextAlignment = HeaderHorizontalAlignment;
