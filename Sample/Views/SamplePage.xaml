@@ -30,15 +30,12 @@
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}"
                             CellHorizontalTextAlignment="End">
-            <!--<sam:DataGridColumn.CellTriggers>
-                <DataTrigger TargetType="sam:Cell"
-                             Binding="{Binding IsOldFag}"
-                             Value="True">
-                    <Setter Property="TextColor" Value="Yellow"/>
-                    <Setter Property="FontAttributes" Value="Bold"/>
-                    <Setter Property="HeightRequest" Value="50"/>
-                </DataTrigger>
-            </sam:DataGridColumn.CellTriggers>-->
+            <sam:DataGridColumn.CellTriggers>
+                <sam:CellTrigger Binding="{Binding IsOldFag}"
+                                 Value="True"
+                                 TextColor="Yellow"
+                                 FontAttributes="Bold"/>
+            </sam:DataGridColumn.CellTriggers>
         </sam:DataGridColumn>
 
         <!--row triggers-->

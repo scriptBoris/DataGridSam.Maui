@@ -9,7 +9,7 @@ namespace DataGridSam.Internal
     internal interface IDataTrigger
     {
         DataGrid? DataGrid { get; set; }
-        int? CellTriggerId { get; }
+        int? CellTriggerId { get; set; }
         BindingBase Binding { get; }
         object? Value { get; }
         object? CSharpValue { get; set; }

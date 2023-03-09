@@ -1,5 +1,7 @@
-﻿using DataGridSam.Handlers;
+﻿using DataGridSam.Extensions;
+using DataGridSam.Handlers;
 using DataGridSam.Internal;
+using Microsoft.Maui.Controls;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -9,8 +11,9 @@ using System.Threading.Tasks;
 
 namespace DataGridSam
 {
-    public class Cell : ContentView
+    public class Cell : ContentView, IDataTriggerHost
     {
+        private readonly List<IDataTrigger> enabledTriggers = new();
         private readonly DataGridColumn column;
         private readonly Row row;
 
@@ -51,77 +54,13 @@ namespace DataGridSam
             get => GetValue(BackgroundColorProperty) as Color;
             set => SetValue(BackgroundColorProperty, value);
         }
-
-        // text color
-        public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
-            nameof(TextColor),
-            typeof(Color),
-            typeof(Cell),
-            null,
-            propertyChanged: Draw
-        );
-        public Color? TextColor
-        {
-            get => GetValue(TextColorProperty) as Color;
-            set => SetValue(TextColorProperty, value);
-        }
-
-        // font size
-        public static readonly BindableProperty FontSizeProperty = BindableProperty.Create(
-            nameof(FontSize),
-            typeof(double?),
-            typeof(Cell),
-            null,
-            propertyChanged: Draw
-        );
-        public double? FontSize
-        {
-            get => GetValue(FontSizeProperty) as double?;
-            set => SetValue(FontSizeProperty, value);
-        }
-
-        // font attributes
-        public static readonly BindableProperty FontAttributesProperty = BindableProperty.Create(
-            nameof(FontAttributes),
-            typeof(FontAttributes?),
-            typeof(Cell),
-            null,
-            propertyChanged: Draw
-        );
-        public FontAttributes? FontAttributes
-        {
-            get => GetValue(FontAttributesProperty) as FontAttributes?;
-            set => SetValue(FontAttributesProperty, value);
-        }
-
-        // vertical text alignment
-        public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create(
-            nameof(VerticalTextAlignment),
-            typeof(TextAlignment?),
-            typeof(Cell),
-            null,
-            propertyChanged: Draw
-        );
-        public TextAlignment? VerticalTextAlignment
-        {
-            get => GetValue(VerticalTextAlignmentProperty) as TextAlignment?;
-            set => SetValue(VerticalTextAlignmentProperty, value);
-        }
-
-        // horizontal text alignment
-        public static readonly BindableProperty HorizontalTextAlignmentProperty = BindableProperty.Create(
-            nameof(HorizontalTextAlignment),
-            typeof(TextAlignment?),
-            typeof(Cell),
-            null,
-            propertyChanged: Draw
-        );
-        public TextAlignment? HorizontalTextAlignment
-        {
-            get => GetValue(HorizontalTextAlignmentProperty) as TextAlignment?;
-            set => SetValue(HorizontalTextAlignmentProperty, value);
-        }
         #endregion bindable props
+
+        public Color? TextColor { get; set; }
+        public double? FontSize { get; set; }
+        public FontAttributes? FontAttributes { get; set; }
+        public TextAlignment? VerticalTextAlignment { get; set; }
+        public TextAlignment? HorizontalTextAlignment { get; set; }
 
         public void Draw()
         {
@@ -209,6 +148,30 @@ namespace DataGridSam
         {
             if (b is Cell cell)
                 cell.Draw();
+        }
+
+        void IDataTriggerHost.Execute(IDataTrigger trigger, object? value)
+        {
+            bool isEnabled = trigger.IsEqualValue(value);
+
+            if (isEnabled)
+            {
+                if (!enabledTriggers.Contains(trigger))
+                    enabledTriggers.Add(trigger);
+            }
+            else
+            {
+                enabledTriggers.Remove(trigger);
+            }
+
+            BackgroundColor = enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+            TextColor = enabledTriggers.FirstNonNull(x => x.TextColor);
+            FontSize = enabledTriggers.FirstNonNull(x => x.FontSize);
+            FontAttributes = enabledTriggers.FirstNonNull(x => x.FontAttributes);
+            VerticalTextAlignment = enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
+            HorizontalTextAlignment = enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
+
+            Draw();
         }
     }
 }

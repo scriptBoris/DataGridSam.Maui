@@ -50,7 +50,7 @@ namespace DataGridSam
             {
                 lastContext = null;
             }
-
+            // todo нужно ли отчищать сработанные тригеры ячеек???
             enabledTriggers.Clear();
             UpdateTriggers();
         }
@@ -60,9 +60,9 @@ namespace DataGridSam
             if (totalTriggerCount == 0)
                 return;
 
-            foreach (var item in triggers!)
+            foreach (var trigger in triggers!)
             {
-                var binding = item.Binding as Binding;
+                var binding = trigger.Binding as Binding;
                 if (binding == null)
                     throw new NotSupportedException();
 
@@ -70,35 +70,35 @@ namespace DataGridSam
                 {
                     object? value = BindingContext?.GetValueFromProperty(binding.Path);
                     View view;
-                    if (item.CellTriggerId != null)
-                        view = cells[item.CellTriggerId.Value];
+                    if (trigger.CellTriggerId != null)
+                        view = cells[trigger.CellTriggerId.Value];
                     else
                         view = this;
 
                     if (view is IDataTriggerHost h)
-                        h.Execute(item, value);
+                        h.Execute(trigger, value);
                 }
             }
         }
 
         private void UpdateTriggers()
         {
-            foreach (var item in triggers!)
+            foreach (var trigger in triggers!)
             {
-                var binding = item.Binding as Binding;
+                var binding = trigger.Binding as Binding;
                 if (binding == null)
                     throw new NotSupportedException();
 
                 object? value = BindingContext?.GetValueFromProperty(binding.Path);
 
                 View view;
-                if (item.CellTriggerId != null)
-                    view = cells[item.CellTriggerId.Value];
+                if (trigger.CellTriggerId != null)
+                    view = cells[trigger.CellTriggerId.Value];
                 else
                     view = this;
 
                 if (view is IDataTriggerHost h)
-                    h.Execute(item, value);
+                    h.Execute(trigger, value);
             }
         }
 

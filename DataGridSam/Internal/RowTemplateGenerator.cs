@@ -15,7 +15,19 @@ namespace DataGridSam.Internal
         {
             int totalTriggerCount = dataGrid.RowTriggers.Count;
             var columns = dataGrid.Columns;
-            var triggers = dataGrid.RowTriggers;
+
+            // triggers
+            List<IDataTrigger> triggers = new List<IDataTrigger>();
+            triggers.AddRange(dataGrid.RowTriggers);
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                var col = columns[i];
+                foreach(var t in col.CellTriggers)
+                    ((IDataTrigger)t).CellTriggerId = i;
+
+                triggers.AddRange(col.CellTriggers);
+            }
 
             triggers.InitTriggers(dataGrid);
 
@@ -54,7 +66,7 @@ namespace DataGridSam.Internal
                     if (button != null)
                         row.SetColumnSpan(button, columns.Count);
 
-                    // row triggers
+                    // triggers
                     row.SetTriggers(triggers, totalTriggerCount);
 
                     row.ColumnDefinitions = colDef;
