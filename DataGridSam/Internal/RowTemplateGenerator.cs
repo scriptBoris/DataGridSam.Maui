@@ -38,6 +38,7 @@ namespace DataGridSam.Internal
                 {
                     var row = new Row(columns.Count);
 
+                    // TODO Сделать обработчик нажатия на сам Row
                     Button? button = null;
                     if (dataGrid.RowSelectedCommand != null || dataGrid.RowLongSelectedCommand != null)
                     {

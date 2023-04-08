@@ -12,7 +12,6 @@ using Org.W3c.Dom;
 
 namespace DataGridSam.Handlers
 {
-    // All the code in this file is only included on Android.
     internal partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     {
         private DividerItemDecoration? last;
