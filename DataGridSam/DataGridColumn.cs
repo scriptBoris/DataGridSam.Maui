@@ -49,11 +49,7 @@ namespace DataGridSam
             typeof(string),
             typeof(DataGridColumn),
             null,
-            propertyChanged: (b, o, n) =>
-            {
-                if (b is DataGridColumn self)
-                    self.DataGrid?.DrawColumn(self, DrawType.Edit, self.Index);
-            }
+            propertyChanged: Draw
         );
         public string? StringFormat
         {

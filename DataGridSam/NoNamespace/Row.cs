@@ -163,7 +163,7 @@ namespace DataGridSam
                 var rect = new Rect(x, 0, w, h);
                 ((IView)cell).Arrange(rect);
 
-                x += w;
+                x += w + _dataGrid.BordersThickness;
             }
 
             return bounds.Size;

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Layouts;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,35 +10,57 @@ using System.Threading.Tasks;
 
 namespace DataGridSam.Internal
 {
-    internal class Mask : Grid
+    internal class Mask : Layout, ILayoutManager
     {
-        //private readonly Frame _externalBorders = new();
-        private readonly Rectangle _externalBorders = new();
+        private readonly DataGrid _dataGrid;
+        private readonly Rectangle? _externalBorders = new();
         private readonly List<View> _internalBorders = new();
 
-        internal Mask()
+        internal Mask(DataGrid dataGrid)
         {
-            ColumnSpacing = 0;
             InputTransparent = true;
-            VerticalOptions = LayoutOptions.Start;
-            //BackgroundColor = Colors.Red;
-            RowDefinitions = new RowDefinitionCollection
-            {
-                new RowDefinition{ Height = GridLength.Auto },
-            };
 
-            //_externalBorders.InputTransparent = true;
-            //_externalBorders.HasShadow = false;
-            //_externalBorders.CornerRadius = 0;
-            //_externalBorders.Padding = 0;
-            //_externalBorders.BackgroundColor = Colors.Transparent;
-            //_externalBorders.BorderColor = Colors.Black;
-            //_externalBorders.VerticalOptions = LayoutOptions.Start;
+            _dataGrid = dataGrid;
             _externalBorders.InputTransparent = true;
-            _externalBorders.BackgroundColor = Colors.Transparent;
             _externalBorders.Stroke = new SolidColorBrush(Colors.Black);
             _externalBorders.StrokeThickness = 1;
-            _externalBorders.VerticalOptions = LayoutOptions.Start;
+        }
+
+        internal bool HasExternalBorders { get; set; } = true;
+
+        protected override ILayoutManager CreateLayoutManager()
+        {
+            return this;
+        }
+
+        public Size ArrangeChildren(Rect bounds)
+        {
+            if (_externalBorders is IView v)
+                v.Arrange(bounds);
+
+            double x = 0;
+            for (int i = 0; i < _internalBorders.Count; i++)
+            {
+                var item = (IView)_internalBorders[i];
+                double w = _dataGrid.BordersThickness;
+                x += _dataGrid.CachedWidths[i] + w;
+
+                var rect = new Rect(x, 0, w, bounds.Height);
+                item.Arrange(rect);
+            }
+
+            return bounds.Size;
+        }
+
+        public Size Measure(double widthConstraint, double heightConstraint)
+        {
+            if (_externalBorders is IView v)
+                v.Measure(widthConstraint, heightConstraint);
+
+            foreach (IView item in _internalBorders)
+                item.Measure(widthConstraint, heightConstraint);
+
+            return new Size(widthConstraint, heightConstraint);
         }
 
         internal void BorderColor(Color c)
@@ -71,49 +94,26 @@ namespace DataGridSam.Internal
         internal void Draw(ObservableCollection<DataGridColumn> columns, Color bordersColor, double borderWidth)
         {
             _internalBorders.Clear();
-            Clear();
+            Children.Clear();
 
-            var c = new ColumnDefinitionCollection();
             for (int i = 0; i < columns.Count; i++)
             {
-                var column = columns[i];
-                c.Add(new ColumnDefinition { Width = column.Width });
-                TryCreateLine(i, columns.Count, bordersColor, borderWidth);
+                TryCreateInternalLine(i, columns.Count, bordersColor, borderWidth);
             }
-
-            ColumnDefinitions = c;
 
             // external borders
-            _externalBorders.Stroke = new SolidColorBrush(bordersColor);
-            _externalBorders.StrokeThickness = borderWidth;
-            this.SetColumnSpan(_externalBorders, ColumnDefinitions.Count);
-            Add(_externalBorders);
-        }
-
-        internal void DrawColumn(DataGridColumn column, DrawType type, int id)
-        {
-            if (type == DrawType.Edit)
+            if (_externalBorders != null)
             {
-                ColumnDefinitions[id] = new ColumnDefinition { Width = column.Width };
+                _externalBorders.Stroke = new SolidColorBrush(bordersColor);
+                _externalBorders.StrokeThickness = borderWidth;
+                Children.Add(_externalBorders);
             }
-            else if (type == DrawType.Delete)
-            {
-                ColumnDefinitions.RemoveAt(id);
-                _internalBorders.RemoveAt(id);
-            }
-            else if (type == DrawType.Add)
-            {
-                ColumnDefinitions.Insert(id, new ColumnDefinition { Width = column.Width });
-
-                // TODO пофиксить потом цвет и ширину
-                TryCreateLine(id, ColumnDefinitions.Count, Colors.Black, 1);
-            }
-
-            this.SetColumnSpan(_externalBorders, ColumnDefinitions.Count);
         }
 
         internal void SetupHeight(double height)
         {
+            return;
+
             if (Height == height)
                 return;
 
@@ -126,23 +126,18 @@ namespace DataGridSam.Internal
             Debug.WriteLine($"Mask height: {height}");
         }
 
-        private void TryCreateLine(int id, int of, Color borderColor, double borderWidth)
+        private void TryCreateInternalLine(int id, int of, Color borderColor, double borderWidth)
         {
             if (id + 1 == of)
                 return;
 
             var line = new BoxView
             {
-                WidthRequest = borderWidth,
                 InputTransparent = true,
-                HorizontalOptions = LayoutOptions.End,
-                VerticalOptions = LayoutOptions.Fill,
-                BackgroundColor = borderColor,
                 Color = borderColor,
             };
 
-            this.SetColumn(line, id);
-            Add(line);
+            Children.Add(line);
             _internalBorders.Insert(id, line);
         }
     }

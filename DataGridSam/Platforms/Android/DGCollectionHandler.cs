@@ -32,6 +32,16 @@ namespace DataGridSam.Handlers
             return res;
         }
 
+        public void UpdateBorderColor()
+        {
+            Update(PlatformView);
+        }
+
+        public void UpdateBorderWidth()
+        {
+            Update(PlatformView);
+        }
+
         private void Update(RecyclerView res)
         {
             if (last != null)
@@ -48,16 +58,6 @@ namespace DataGridSam.Handlers
             drawable.SetSize(1, width);
             last.Drawable = drawable;
             res.AddItemDecoration(last);
-        }
-
-        public void UpdateBorderColor()
-        {
-            Update(PlatformView);
-        }
-
-        public void UpdateBorderWidth()
-        {
-            Update(PlatformView);
         }
     }
 }

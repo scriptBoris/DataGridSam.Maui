@@ -54,15 +54,25 @@ namespace DataGridSam.Internal
 
         protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
         {
-            if (cachedWidth != widthConstraint)
-            {
-                var lengths = _dataGrid.Columns.Select(x => x.Width).ToArray();
-                _dataGrid.CachedWidths = Row.Calculate(lengths, widthConstraint);
-                cachedWidth = widthConstraint;
-            }
-
+            Recalc(widthConstraint, false);
             var res = base.MeasureOverride(widthConstraint, heightConstraint);
             return res;
+        }
+
+        internal void Recalc(double widthConstraint, bool isForce)
+        {
+            if (cachedWidth != widthConstraint || isForce)
+            {
+                int vlines = _dataGrid.Columns.Count - 1;
+                if (vlines < 0)
+                    vlines = 0;
+
+                double freeWidth = widthConstraint - vlines * _dataGrid.BordersThickness;
+                var lengths = _dataGrid.Columns.Select(x => x.Width).ToArray();
+
+                _dataGrid.CachedWidths = Row.Calculate(lengths, freeWidth);
+                cachedWidth = widthConstraint;
+            }
         }
     }
 }

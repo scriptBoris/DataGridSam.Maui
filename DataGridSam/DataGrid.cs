@@ -41,7 +41,7 @@ namespace DataGridSam
             _collection.SetBinding(CollectionView.ItemsSourceProperty, new Binding(nameof(ItemsSource), source: this));
 
             // mask
-            _mask = new();
+            _mask = new(this);
             Children.Add(_mask);
 
             _collection.VisibleHeightChanged += (o, e) => OnHeightChanged(); ;
@@ -401,13 +401,6 @@ namespace DataGridSam
             _collection.ItemTemplate = _generator.Generate(this);
         }
 
-        internal void DrawColumn(DataGridColumn column, DrawType type, int id)
-        {
-            _header.DrawColumn(column, type, id);
-            _mask.DrawColumn(column, type, id);
-            _collection.ItemTemplate = _generator.Generate(this);
-        }
-
         private void OnHeightChanged()
         {
             if (_header.Height < 0 || _collection.VisibleHeight < 0)
@@ -422,31 +415,11 @@ namespace DataGridSam
             if (!isInitialized)
                 return;
 
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    var addItem = (DataGridColumn)e.NewItems![0]!;
-                    addItem.SetParent(this, e.NewStartingIndex);
-                    DrawColumn(addItem, DrawType.Add, e.NewStartingIndex);
-                    return;
+            for (int i = 0; i < Columns.Count; i++)
+                Columns[i].SetParent(this, i);
 
-                case NotifyCollectionChangedAction.Remove:
-                    var removeItem = (DataGridColumn)e.OldItems![0]!;
-                    removeItem.SetParent(null, null);
-                    DrawColumn(removeItem, DrawType.Delete, e.OldStartingIndex);
-                    return;
-
-                case NotifyCollectionChangedAction.Reset:
-                    foreach (var item in Columns)
-                        item.SetParent(null, null);
-                    break;
-
-                case NotifyCollectionChangedAction.Replace:
-                case NotifyCollectionChangedAction.Move:
-                default:
-                    Draw();
-                    break;
-            }
+            _collection.Recalc(_collection.Width, true);
+            Draw();
         }
 
         private static void Draw(BindableObject b, object o, object n)
@@ -462,8 +435,27 @@ namespace DataGridSam
 
         public Size ArrangeChildren(Rect bounds)
         {
-            ((IView)_header).Arrange(new Rect(0,0, bounds.Width, heightHeadCache));
-            ((IView)_collection).Arrange(new Rect(0, heightHeadCache, bounds.Width, bounds.Height - heightHeadCache));
+            double x = 0;
+            double y = 0;
+            double w = bounds.Width;
+            double h = bounds.Height;
+
+            if (_mask.HasExternalBorders)
+            {
+                y = BordersThickness;
+                x = BordersThickness;
+                w -= BordersThickness * 2;
+                h -= BordersThickness * 2;
+            }
+
+            // head
+            double headHeight = heightHeadCache + y;
+            ((IView)_header).Arrange(new Rect(x, y, w, heightHeadCache));
+
+            // collection
+            ((IView)_collection).Arrange(new Rect(x, headHeight, w, h - heightHeadCache));
+
+            // mask
             ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, bounds.Height));
 
             return bounds.Size;
@@ -473,15 +465,31 @@ namespace DataGridSam
         public Size Measure(double widthConstraint, double heightConstraint)
         {
             double h = double.IsInfinity(heightConstraint) ? 0 : heightConstraint;
-            var mhead = ((IView)_header).Measure(widthConstraint, heightConstraint);
+            double w = double.IsInfinity(widthConstraint) ? 300 : widthConstraint;
 
-            double freeSpace = h - mhead.Height;
-            var mcollection = ((IView)_collection).Measure(widthConstraint, freeSpace);
+            if (_mask.HasExternalBorders)
+            {
+                h -= BordersThickness * 2;
+                w -= BordersThickness * 2;
+            }
+
+            // head
+            var mhead = ((IView)_header).Measure(w, double.PositiveInfinity);
+
+            // collection
+            double freeSpaceH = h - mhead.Height;
+            var mcollection = ((IView)_collection).Measure(w, freeSpaceH);
+
+            // mask
             ((IView)_mask).Measure(widthConstraint, heightConstraint);
 
             if (double.IsInfinity(heightConstraint))
             {
                 h += mhead.Height + mcollection.Height;
+
+                // reset h
+                if (_mask.HasExternalBorders)
+                    h += BordersThickness * 2;
             }
             else
             {
@@ -490,14 +498,8 @@ namespace DataGridSam
 
             heightHeadCache = mhead.Height;
 
+
             return new Size(widthConstraint, h);
         }
-    }
-
-    internal enum DrawType
-    {
-        Edit,
-        Add,
-        Delete,
     }
 }

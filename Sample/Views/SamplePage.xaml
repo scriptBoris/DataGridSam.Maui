@@ -8,6 +8,7 @@
              x:DataType="vm:SampleVm"
              Title="Sample DataGrid"
              BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
+    
     <sam:DataGrid ItemsSource="{Binding Items}"
                   RowSelectedCommand="{Binding CommandSelectedRow}"
                   RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
@@ -23,6 +24,11 @@
                             PropertyName="FirstName"/>
 
         <sam:DataGridColumn Title="Last name"
+                            CellHorizontalTextAlignment="Start"
+                            PropertyName="LastName"/>
+        
+        <sam:DataGridColumn Title="Test"
+                            CellHorizontalTextAlignment="End"
                             PropertyName="LastName"/>
 
         <sam:DataGridColumn Title="Birth date"

@@ -90,39 +90,43 @@ namespace Sample.Core
             return res;
         }
 
+        private static ObservableCollection<User>? users;
         public static ObservableCollection<User> GenerateUsers(int count = 500)
         {
-            var rand = new Random();
-            var res = new ObservableCollection<User>();
-            for (int i = 0; i < count; i++)
+            if (users == null)
             {
-                int min = 365 * 18;
-                int max = 365 * 50;
-
-                Ranks rank = Ranks.OfficePlankton;
-
-
-                int randRank = rand.Next(0, 100);
-                if (randRank <= 5)
+                users = new();
+                var rand = new Random();
+                for (int i = 0; i < 500; i++)
                 {
-                    rank = Ranks.Admin;
+                    int min = 365 * 18;
+                    int max = 365 * 50;
+
+                    Ranks rank = Ranks.OfficePlankton;
+
+
+                    int randRank = rand.Next(0, 100);
+                    if (randRank <= 5)
+                    {
+                        rank = Ranks.Admin;
+                    }
+                    else if (randRank <= 25)
+                    {
+                        rank = Ranks.Manager;
+                    }
+
+                    var user = new User
+                    {
+                        FirstName = Faker.Name.First(), 
+                        LastName = Faker.Name.Last(),
+                        BirthDate = DateTime.Now - TimeSpan.FromDays(rand.Next(min, max)),
+                        Rank = rank,
+                    };
+                    users.Add(user);
                 }
-                else if (randRank <= 25)
-                {
-                    rank = Ranks.Manager;
-                }
-
-                var user = new User
-                {
-                    FirstName = Faker.Name.First(), 
-                    LastName = Faker.Name.Last(),
-                    BirthDate = DateTime.Now - TimeSpan.FromDays(rand.Next(min, max)),
-                    Rank = rank,
-                };
-                res.Add(user);
             }
 
-            return res;
+            return new ObservableCollection<User>(users.Take(count));
         }
     }
 }

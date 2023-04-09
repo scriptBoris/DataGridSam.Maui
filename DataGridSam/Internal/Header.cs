@@ -140,25 +140,6 @@ namespace DataGridSam.Internal
             this.Add(_underline);
         }
 
-        internal void DrawColumn(DataGridColumn column, DrawType type, int colIndex)
-        {
-            switch (type)
-            {
-                case DrawType.Edit:
-                    ColumnDefinitions[colIndex] = new ColumnDefinition { Width = column.Width };
-                    break;
-                case DrawType.Add:
-                    ColumnDefinitions.Insert(colIndex, new ColumnDefinition { Width = column.Width });
-                    CreateTitle(column, colIndex);
-                    break;
-                case DrawType.Delete:
-                    RemoveTitle(colIndex);
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private void CreateTitle(DataGridColumn col, int index)
         {
             var label = new Label();
@@ -170,7 +151,7 @@ namespace DataGridSam.Internal
             label.HorizontalTextAlignment = HeaderHorizontalAlignment;
 
             this.SetColumn(label, index);
-            Add(label);
+            Children.Add(label);
 
             _views.Insert(index, label);
 
