@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Sample.ViewModels"
+             xmlns:models="clr-namespace:Sample.Models"
+             x:Class="Sample.Views.DefaultCollectionPage"
+             x:DataType="vm:DefaultCollectionVm"
+             Title="Default Collection">
+
+    <Grid RowDefinitions="Auto, *"
+          RowSpacing="0">
+        <Grid ColumnDefinitions="1*, 1*, 100"
+              BackgroundColor="#222"
+              Padding="0">
+            <Label Text="First name"
+                   TextColor="#ccc"
+                   Grid.Column="0"/>
+            <Label Text="Last name"
+                   TextColor="#ccc"
+                   Grid.Column="1"/>
+            <Label Text="Birthdate"
+                   TextColor="#ccc"
+                   Grid.Column="2"/>
+        </Grid>
+        
+        <CollectionView Grid.Row="1"
+                        ItemsSource="{Binding Items}"
+                        ItemSizingStrategy="MeasureAllItems">
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" 
+                                   ItemSpacing="0"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:User">
+                    <Grid ColumnDefinitions="1*, 1*, 100"
+                          BackgroundColor="#323232"
+                          Padding="0">
+                        <Label Text="{Binding FirstName}"
+                               TextColor="#ccc"
+                               Grid.Column="0"/>
+                    
+                        <Label Text="{Binding LastName}"
+                               TextColor="#ccc"
+                               Grid.Column="1"/>
+                    
+                        <Label Text="{Binding BirthDate}"
+                               TextColor="#ccc"
+                               Grid.Column="2"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Border Grid.RowSpan="2"
+                Stroke="#888"
+                StrokeThickness="1"/>
+    </Grid>
+</ContentPage>

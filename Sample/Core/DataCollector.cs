@@ -90,44 +90,39 @@ namespace Sample.Core
             return res;
         }
 
-        private static ObservableCollection<User>? users;
-        public static ObservableCollection<User> GetUsers2()
+        public static ObservableCollection<User> GenerateUsers(int count = 500)
         {
-            if (users == null)
+            var rand = new Random();
+            var res = new ObservableCollection<User>();
+            for (int i = 0; i < count; i++)
             {
-                var rand = new Random();
-                var res = new ObservableCollection<User>();
-                for (int i = 0; i < 500; i++)
+                int min = 365 * 18;
+                int max = 365 * 50;
+
+                Ranks rank = Ranks.OfficePlankton;
+
+
+                int randRank = rand.Next(0, 100);
+                if (randRank <= 5)
                 {
-                    int min = 365 * 18;
-                    int max = 365 * 50;
-
-                    Ranks rank = Ranks.OfficePlankton;
-
-
-                    int randRank = rand.Next(0, 100);
-                    if (randRank <= 5)
-                    {
-                        rank = Ranks.Admin;
-                    }
-                    else if (randRank <= 25)
-                    {
-                        rank = Ranks.Manager;
-                    }
-
-                    var user = new User
-                    {
-                        FirstName = Faker.Name.First(), 
-                        LastName = Faker.Name.Last(),
-                        BirthDate = DateTime.Now - TimeSpan.FromDays(rand.Next(min, max)),
-                        Rank = rank,
-                    };
-                    res.Add(user);
+                    rank = Ranks.Admin;
                 }
-                users = res;
+                else if (randRank <= 25)
+                {
+                    rank = Ranks.Manager;
+                }
+
+                var user = new User
+                {
+                    FirstName = Faker.Name.First(), 
+                    LastName = Faker.Name.Last(),
+                    BirthDate = DateTime.Now - TimeSpan.FromDays(rand.Next(min, max)),
+                    Rank = rank,
+                };
+                res.Add(user);
             }
 
-            return users;
+            return res;
         }
     }
 }

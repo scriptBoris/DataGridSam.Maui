@@ -17,7 +17,7 @@ namespace DataGridSam.Internal
             var columns = dataGrid.Columns;
 
             // triggers
-            List<IDataTrigger> triggers = new List<IDataTrigger>();
+            var triggers = new List<IDataTrigger>();
             triggers.AddRange(dataGrid.RowTriggers);
 
             for (int i = 0; i < columns.Count; i++)
@@ -36,41 +36,37 @@ namespace DataGridSam.Internal
             {
                 try
                 {
-                    var row = new Row(columns.Count);
+                    var row = new Row(dataGrid);
 
                     // TODO Сделать обработчик нажатия на сам Row
-                    Button? button = null;
-                    if (dataGrid.RowSelectedCommand != null || dataGrid.RowLongSelectedCommand != null)
-                    {
-                        button = new DGButton()
-                        {
-                            CornerRadius = 0,
-                            Padding = 0,
-                            Margin = 0,
-                            BackgroundColor = Colors.Transparent,
-                            Command = dataGrid.RowSelectedCommand,
-                            CommandLongClick = dataGrid.RowLongSelectedCommand,
-                        };
-                        button.SetBinding(Button.CommandParameterProperty, Binding.SelfPath);
-                        row.Children.Add(button);
-                    }
+                    //Button? button = null;
+                    //if (dataGrid.RowSelectedCommand != null || dataGrid.RowLongSelectedCommand != null)
+                    //{
+                    //    button = new DGButton()
+                    //    {
+                    //        CornerRadius = 0,
+                    //        Padding = 0,
+                    //        Margin = 0,
+                    //        BackgroundColor = Colors.Transparent,
+                    //        Command = dataGrid.RowSelectedCommand,
+                    //        CommandLongClick = dataGrid.RowLongSelectedCommand,
+                    //    };
+                    //    button.SetBinding(Button.CommandParameterProperty, Binding.SelfPath);
+                    //    row.Children.Add(button);
+                    //}
 
-                    var colDef = new ColumnDefinitionCollection();
-                    for (int i = 0; i < columns.Count; i++)
-                    {
-                        var column = columns[i];
-                        colDef.Add(new ColumnDefinition { Width = column.Width });
+                    //var colDef = new ColumnDefinitionCollection();
+                    //for (int i = 0; i < columns.Count; i++)
+                    //{
+                    //    var column = columns[i];
+                    //    colDef.Add(new ColumnDefinition { Width = column.Width });
 
-                        row.InitCell(column);
-                    }
-
-                    if (button != null)
-                        row.SetColumnSpan(button, columns.Count);
+                    //    row.InitCell(column);
+                    //}
 
                     // triggers
-                    row.SetTriggers(triggers, totalTriggerCount);
+                    row.SetTriggers(triggers);
 
-                    row.ColumnDefinitions = colDef;
                     row.Draw();
                     return row;
                 }

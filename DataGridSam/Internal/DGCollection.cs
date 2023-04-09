@@ -9,10 +9,18 @@ namespace DataGridSam.Internal
 {
     internal class DGCollection : CollectionView
     {
+        private readonly DataGrid _dataGrid;
         private Color _borderColor = Colors.Black;
         private double _borderThickness = 1;
 
+        private double cachedWidth = -1;
+
         public event EventHandler<double>? VisibleHeightChanged;
+
+        public DGCollection(DataGrid dataGrid)
+        {
+            this._dataGrid = dataGrid;
+        }
 
         public double VisibleHeight { get; private set; }
         
@@ -42,6 +50,19 @@ namespace DataGridSam.Internal
         {
             VisibleHeight = height;
             VisibleHeightChanged?.Invoke(this, height);
+        }
+
+        protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+        {
+            if (cachedWidth != widthConstraint)
+            {
+                var lengths = _dataGrid.Columns.Select(x => x.Width).ToArray();
+                _dataGrid.CachedWidths = Row.Calculate(lengths, widthConstraint);
+                cachedWidth = widthConstraint;
+            }
+
+            var res = base.MeasureOverride(widthConstraint, heightConstraint);
+            return res;
         }
     }
 }

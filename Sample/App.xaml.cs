@@ -9,5 +9,6 @@ public partial class App : Application
 		InitializeComponent();
 
 		MainPage = new NavigationPage(new MainPage());
-	}
+		//MainPage = new DefaultCollectionPage();
+    }
 }

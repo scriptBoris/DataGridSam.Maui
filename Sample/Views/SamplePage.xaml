@@ -6,19 +6,19 @@
              xmlns:vm="clr-namespace:Sample.ViewModels"
              x:Class="Sample.Views.SamplePage"
              x:DataType="vm:SampleVm"
-             BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333, Default=#fff}">
+             Title="Sample DataGrid"
+             BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
     <sam:DataGrid ItemsSource="{Binding Items}"
                   RowSelectedCommand="{Binding CommandSelectedRow}"
                   RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
-                  BordersColor="#888"
+                  BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
                   BordersThickness="1"
-                  Margin="10"
                   HeaderFontSize="16"
                   HeaderHorizontalAlignment="Center"
-                  HeaderTextColor="#999"
-                  HeaderBackgroundColor="Black"
-                  CellTextColor="#777"
-                  CellBackgroundColor="#CCC">
+                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#AAA}"
+                  HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                  CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
         <sam:DataGridColumn Title="First name"
                             PropertyName="FirstName"/>
 

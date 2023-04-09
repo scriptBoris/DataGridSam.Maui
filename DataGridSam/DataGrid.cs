@@ -1,5 +1,6 @@
 ﻿using DataGridSam.Handlers;
 using DataGridSam.Internal;
+using Microsoft.Maui.Layouts;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -12,47 +13,39 @@ using static System.Net.Mime.MediaTypeNames;
 namespace DataGridSam
 {
     [ContentProperty(nameof(Columns))]
-    public class DataGrid : Grid, IHeaderCustomize
+    public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     {
+        private readonly Header _header;
+        private readonly DGCollection _collection;
+        private readonly Mask _mask;
         private readonly RowTemplateGenerator _generator = new();
-        private readonly Header _header = new();
-        private readonly DGCollection _collection = new();
-        private readonly Mask _mask = new();
 
         private bool isInitialized;
 
         public DataGrid()
         {
-            RowDefinitions = new()
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Star },
-            };
-            RowSpacing = 0;
-
             // header
-            Add(_header);
+            _header = new();
+            Children.Add(_header);
 
             // collection
-            this.SetRow(_collection, 1);
-            Add(_collection);
+            _collection = new(this)
+            {
+                ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
+                ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+                {
+                    ItemSpacing = 0,
+                }
+            };
+            Children.Add(_collection);
             _collection.SetBinding(CollectionView.ItemsSourceProperty, new Binding(nameof(ItemsSource), source: this));
 
             // mask
-            this.SetRowSpan(_mask, 2);
-            Add(_mask);
+            _mask = new();
+            Children.Add(_mask);
 
-            _collection.VisibleHeightChanged += (o, e) => Update(); ;
-            _header.SizeChanged += (o, e) => Update();
-        }
-
-        private void Update()
-        {
-            if (_header.Height < 0 || _collection.VisibleHeight < 0)
-                return;
-
-            double h = _collection.VisibleHeight + _header.Height;
-            _mask.SetupHeight(h);
+            _collection.VisibleHeightChanged += (o, e) => OnHeightChanged(); ;
+            _header.SizeChanged += (o, e) => OnHeightChanged();
         }
 
         #region bindable props
@@ -372,6 +365,8 @@ namespace DataGridSam
         public IList<RowTrigger> RowTriggers => (IList<RowTrigger>)GetValue(RowTriggersProperty);
         #endregion bindable props
 
+        internal double[] CachedWidths { get; set; } = Array.Empty<double>();
+
         protected override void OnParentSet()
         {
             base.OnParentSet();
@@ -413,6 +408,15 @@ namespace DataGridSam
             _collection.ItemTemplate = _generator.Generate(this);
         }
 
+        private void OnHeightChanged()
+        {
+            if (_header.Height < 0 || _collection.VisibleHeight < 0)
+                return;
+
+            double h = _collection.VisibleHeight + _header.Height;
+            _mask.SetupHeight(h);
+        }
+
         private void Cols_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (!isInitialized)
@@ -449,6 +453,44 @@ namespace DataGridSam
         {
             if (b is DataGrid self)
                 self.Draw();
+        }
+
+        protected override ILayoutManager CreateLayoutManager()
+        {
+            return this;
+        }
+
+        public Size ArrangeChildren(Rect bounds)
+        {
+            ((IView)_header).Arrange(new Rect(0,0, bounds.Width, heightHeadCache));
+            ((IView)_collection).Arrange(new Rect(0, heightHeadCache, bounds.Width, bounds.Height - heightHeadCache));
+            ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, bounds.Height));
+
+            return bounds.Size;
+        }
+        
+        private double heightHeadCache;
+        public Size Measure(double widthConstraint, double heightConstraint)
+        {
+            double h = double.IsInfinity(heightConstraint) ? 0 : heightConstraint;
+            var mhead = ((IView)_header).Measure(widthConstraint, heightConstraint);
+
+            double freeSpace = h - mhead.Height;
+            var mcollection = ((IView)_collection).Measure(widthConstraint, freeSpace);
+            ((IView)_mask).Measure(widthConstraint, heightConstraint);
+
+            if (double.IsInfinity(heightConstraint))
+            {
+                h += mhead.Height + mcollection.Height;
+            }
+            else
+            {
+                h = heightConstraint;
+            }
+
+            heightHeadCache = mhead.Height;
+
+            return new Size(widthConstraint, h);
         }
     }
 

@@ -19,6 +19,8 @@ namespace DataGridSam
 
         public Cell(DataGridColumn column, Row row)
         {
+            this.Margin = 0;
+            this.Padding = 0;
             this.column = column;
             this.row = row;
 
@@ -47,7 +49,11 @@ namespace DataGridSam
             typeof(Color),
             typeof(Cell),
             null,
-            propertyChanged: Draw
+            propertyChanged:(b,o,n) =>
+            {
+                if (b is Cell cell)
+                    cell.Draw();
+            }
         );
         public new Color? BackgroundColor
         {
@@ -114,24 +120,6 @@ namespace DataGridSam
             }
         }
 
-        public static T ResolveProperty<T>(object? value1, object elseValue)
-        {
-            if (value1 is T T1)
-                return T1;
-            else
-                return (T)elseValue;
-        }
-
-        public static T ResolveProperty<T>(object? value1, object? value2, object elseValue)
-        {
-            if (value1 is T T1)
-                return T1;
-            else if (value2 is T T2)
-                return T2;
-            else
-                return (T)elseValue;
-        }
-
         public T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue)
         {
             if (cellValue is T cellT)
@@ -142,12 +130,6 @@ namespace DataGridSam
                 return columnT;
             else
                 return (T)dataGridValue;
-        }
-
-        public static void Draw(BindableObject b, object o, object n)
-        {
-            if (b is Cell cell)
-                cell.Draw();
         }
 
         void IDataTriggerHost.Execute(IDataTrigger trigger, object? value)
