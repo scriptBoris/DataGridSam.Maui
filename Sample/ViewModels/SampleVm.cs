@@ -14,7 +14,7 @@ namespace Sample.ViewModels
     {
         public SampleVm()
         {
-            Items = DataCollector.GenerateUsers(90);
+            Items = DataCollector.GenerateUsers(100);
         }
 
         public ObservableCollection<User> Items { get; set; }

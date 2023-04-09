@@ -11,18 +11,16 @@ using System.Threading.Tasks;
 
 namespace DataGridSam
 {
-    public class Cell : ContentView, IDataTriggerHost
+    public class Cell : IDataTriggerHost
     {
-        private readonly List<IDataTrigger> enabledTriggers = new();
-        private readonly DataGridColumn column;
-        private readonly Row row;
+        private readonly List<IDataTrigger> _enabledTriggers = new();
+        private readonly DataGridColumn _column;
+        private readonly Row _row;
 
         public Cell(DataGridColumn column, Row row)
         {
-            this.Margin = 0;
-            this.Padding = 0;
-            this.column = column;
-            this.row = row;
+            this._column = column;
+            this._row = row;
 
             if (column.CellTemplate == null)
             {
@@ -36,32 +34,14 @@ namespace DataGridSam
             }
             else
             {
-                var custom = column.CellTemplate.CreateContent() as View;
-                custom?.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+                var custom = (View)column.CellTemplate.CreateContent();
+                custom.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
                 Content = custom;
             }
         }
-
-        #region bindable props
-        // background color
-        public static new readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(
-            nameof(BackgroundColor),
-            typeof(Color),
-            typeof(Cell),
-            null,
-            propertyChanged:(b,o,n) =>
-            {
-                if (b is Cell cell)
-                    cell.Draw();
-            }
-        );
-        public new Color? BackgroundColor
-        {
-            get => GetValue(BackgroundColorProperty) as Color;
-            set => SetValue(BackgroundColorProperty, value);
-        }
-        #endregion bindable props
-
+        
+        public View Content { get; private set; }
+        public Color? BackgroundColor { get; set; }
         public Color? TextColor { get; set; }
         public double? FontSize { get; set; }
         public FontAttributes? FontAttributes { get; set; }
@@ -72,50 +52,50 @@ namespace DataGridSam
         {
             var bg = ResolveProperty<Color>(
                 BackgroundColor,
-                row.BackgroundColor,
-                column.CellBackgroundColor,
-                column.DataGrid!.CellBackgroundColor);
+                _row.BackgroundColor,
+                _column.CellBackgroundColor,
+                _column.DataGrid!.CellBackgroundColor);
 
-            if (bg == row.BackgroundColor)
+            if (bg == _row.BackgroundColor)
                 bg = Colors.Transparent;
 
-            base.BackgroundColor = bg;
+            Content.BackgroundColor = bg;
 
             if (Content is Label label)
             {
                 label.TextColor = ResolveProperty<Color>(
                     TextColor,
-                    row.TextColor,
-                    column.CellTextColor,
-                    column.DataGrid!.CellTextColor
+                    _row.TextColor,
+                    _column.CellTextColor,
+                    _column.DataGrid!.CellTextColor
                 );
 
                 label.FontSize = ResolveProperty<double>(
                     FontSize,
-                    row.FontSize,
-                    column.CellFontSize,
-                    column.DataGrid!.CellFontSize
+                    _row.FontSize,
+                    _column.CellFontSize,
+                    _column.DataGrid!.CellFontSize
                 );
 
                 label.FontAttributes = ResolveProperty<FontAttributes>(
                     FontAttributes,
-                    row.FontAttributes,
-                    column.CellFontAttributes,
-                    column.DataGrid!.CellFontAttributes
+                    _row.FontAttributes,
+                    _column.CellFontAttributes,
+                    _column.DataGrid!.CellFontAttributes
                 );
 
                 label.VerticalTextAlignment = ResolveProperty<TextAlignment>(
                     VerticalTextAlignment,
-                    row.VerticalTextAlignment,
-                    column.CellVerticalTextAlignment,
-                    column.DataGrid!.CellVerticalTextAlignment
+                    _row.VerticalTextAlignment,
+                    _column.CellVerticalTextAlignment,
+                    _column.DataGrid!.CellVerticalTextAlignment
                 );
 
                 label.HorizontalTextAlignment = ResolveProperty<TextAlignment>(
                     HorizontalTextAlignment,
-                    row.HorizontalTextAlignment,
-                    column.CellHorizontalTextAlignment,
-                    column.DataGrid!.CellHorizontalTextAlignment
+                    _row.HorizontalTextAlignment,
+                    _column.CellHorizontalTextAlignment,
+                    _column.DataGrid!.CellHorizontalTextAlignment
                 );
             }
         }
@@ -138,20 +118,20 @@ namespace DataGridSam
 
             if (isEnabled)
             {
-                if (!enabledTriggers.Contains(trigger))
-                    enabledTriggers.Add(trigger);
+                if (!_enabledTriggers.Contains(trigger))
+                    _enabledTriggers.Add(trigger);
             }
             else
             {
-                enabledTriggers.Remove(trigger);
+                _enabledTriggers.Remove(trigger);
             }
 
-            BackgroundColor = enabledTriggers.FirstNonNull(x => x.BackgroundColor);
-            TextColor = enabledTriggers.FirstNonNull(x => x.TextColor);
-            FontSize = enabledTriggers.FirstNonNull(x => x.FontSize);
-            FontAttributes = enabledTriggers.FirstNonNull(x => x.FontAttributes);
-            VerticalTextAlignment = enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
-            HorizontalTextAlignment = enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
+            BackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+            TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
+            FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
+            FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
+            VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
+            HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
 
             Draw();
         }

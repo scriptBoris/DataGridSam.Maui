@@ -36,16 +36,16 @@
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}"
                             CellHorizontalTextAlignment="End">
-            <sam:DataGridColumn.CellTriggers>
+            <!--<sam:DataGridColumn.CellTriggers>
                 <sam:CellTrigger Binding="{Binding IsOldFag}"
                                  Value="True"
                                  TextColor="Yellow"
                                  FontAttributes="Bold"/>
-            </sam:DataGridColumn.CellTriggers>
+            </sam:DataGridColumn.CellTriggers>-->
         </sam:DataGridColumn>
 
         <!--row triggers-->
-        <sam:DataGrid.RowTriggers>
+        <!--<sam:DataGrid.RowTriggers>
             <sam:RowTrigger Binding="{Binding IsAdmin}"
                             Value="True"
                             BackgroundColor="#833"
@@ -56,6 +56,6 @@
                             Value="True"
                             BackgroundColor="#225"
                             TextColor="White"/>
-        </sam:DataGrid.RowTriggers>
+        </sam:DataGrid.RowTriggers>-->
     </sam:DataGrid>
 </ContentPage>

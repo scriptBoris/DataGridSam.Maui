@@ -32,7 +32,7 @@ namespace DataGridSam
                 var cell = new Cell(col, this);
                 
                 _cells[i] = cell;
-                Children.Add(cell);
+                Children.Add(cell.Content);
             }
         }
 
@@ -80,7 +80,7 @@ namespace DataGridSam
                     object? value = BindingContext?.GetValueFromProperty(binding.Path);
                     View view;
                     if (trigger.CellTriggerId != null)
-                        view = _cells[trigger.CellTriggerId.Value];
+                        view = _cells[trigger.CellTriggerId.Value].Content;
                     else
                         view = this;
 
@@ -102,7 +102,7 @@ namespace DataGridSam
 
                 View view;
                 if (trigger.CellTriggerId != null)
-                    view = _cells[trigger.CellTriggerId.Value];
+                    view = _cells[trigger.CellTriggerId.Value].Content;
                 else
                     view = this;
 
@@ -161,7 +161,7 @@ namespace DataGridSam
                 double h = bounds.Size.Height;
 
                 var rect = new Rect(x, 0, w, h);
-                ((IView)cell).Arrange(rect);
+                ((IView)cell.Content).Arrange(rect);
 
                 x += w + _dataGrid.BordersThickness;
             }
@@ -177,7 +177,7 @@ namespace DataGridSam
                 var cell = _cells[i];
                 double w = Widths[i];
 
-                var m = ((IView)cell).Measure(w, heightConstraint);
+                var m = ((IView)cell.Content).Measure(w, heightConstraint);
 
                 if (m.Height > h)
                     h = m.Height;
