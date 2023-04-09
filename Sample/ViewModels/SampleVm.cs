@@ -10,9 +10,9 @@ using System.Windows.Input;
 
 namespace Sample.ViewModels
 {
-    public class SampleVm : BaseNotify
+    public class DataGridSampleVm : BaseNotify
     {
-        public SampleVm()
+        public DataGridSampleVm()
         {
             Items = DataCollector.GenerateUsers(100);
         }

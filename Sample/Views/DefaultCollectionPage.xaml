@@ -53,9 +53,9 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <Border Grid.RowSpan="2"
+        <!--<Border Grid.RowSpan="2"
                 BackgroundColor="Transparent"
                 Stroke="#888"
-                StrokeThickness="1"/>
+                StrokeThickness="1"/>-->
     </Grid>
 </ContentPage>

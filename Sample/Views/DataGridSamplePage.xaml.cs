@@ -3,12 +3,12 @@ using System.Collections.ObjectModel;
 
 namespace Sample.Views;
 
-public partial class SamplePage
+public partial class DataGridSamplePage
 {
-    public SamplePage()
+    public DataGridSamplePage()
     {
         InitializeComponent();
-        BindingContext = new SampleVm();
+        BindingContext = new DataGridSampleVm();
     }
 }
 

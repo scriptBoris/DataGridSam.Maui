@@ -4,9 +4,9 @@
              xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
              xmlns:models="clr-namespace:Sample.Models"
              xmlns:vm="clr-namespace:Sample.ViewModels"
-             x:Class="Sample.Views.SamplePage"
-             x:DataType="vm:SampleVm"
-             Title="Sample DataGrid"
+             x:Class="Sample.Views.DataGridSamplePage"
+             x:DataType="vm:DataGridSampleVm"
+             Title="Sample"
              BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
     
     <sam:DataGrid ItemsSource="{Binding Items}"
@@ -24,7 +24,6 @@
                             PropertyName="FirstName"/>
 
         <sam:DataGridColumn Title="Last name"
-                            CellHorizontalTextAlignment="Start"
                             PropertyName="LastName"/>
 
         <sam:DataGridColumn Title="Birth date"
@@ -33,4 +32,5 @@
                             StringFormat="{}{0:dd.MM.yyyy}"
                             CellHorizontalTextAlignment="End"/>
     </sam:DataGrid>
+    
 </ContentPage>

@@ -11,7 +11,6 @@ namespace Sample.ViewModels
 {
     public class DataGridTriggersVm : BaseNotify
     {
-
         public DataGridTriggersVm()
         {
             Items = DataCollector.GenerateUsers(100);

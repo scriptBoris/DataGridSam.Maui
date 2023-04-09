@@ -5,7 +5,7 @@
              Title="MainPage"
              Padding="10">
     <VerticalStackLayout Spacing="10">
-        <Button Text="Sample DataGrid"
+        <Button Text="Sample"
                 Clicked="Button_Clicked"/>
 
         <Button Text="Default MAUI Collection (for compare)"
