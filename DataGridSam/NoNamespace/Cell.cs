@@ -19,15 +19,14 @@ namespace DataGridSam
 
         public Cell(DataGridColumn column, Row row)
         {
-            this._column = column;
-            this._row = row;
+            _column = column;
+            _row = row;
 
             if (column.CellTemplate == null)
             {
                 var label = new Label
                 {
-                    VerticalOptions = LayoutOptions.Fill,
-                    HorizontalOptions = LayoutOptions.Fill,
+                    Padding = SetupPadding(),
                 };
                 Content = label;
                 label.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
@@ -37,9 +36,30 @@ namespace DataGridSam
                 var custom = (View)column.CellTemplate.CreateContent();
                 custom.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
                 Content = custom;
+
+                switch (custom)
+                {
+                    case Button button:
+                        button.Padding = SetupPadding();
+                        break;
+                    case ImageButton ibutton:
+                        ibutton.Padding = SetupPadding();
+                        break;
+                    case Label cl:
+                        cl.Padding = SetupPadding();
+                        break;
+                    case ContentView cv:
+                        cv.Padding = SetupPadding();
+                        break;
+                    case Layout clt:
+                        clt.Padding = SetupPadding();
+                        break;
+                    default:
+                        break;
+                }
             }
         }
-        
+
         public View Content { get; private set; }
         public Color? BackgroundColor { get; set; }
         public Color? TextColor { get; set; }
@@ -110,6 +130,14 @@ namespace DataGridSam
                 return columnT;
             else
                 return (T)dataGridValue;
+        }
+
+        private Thickness SetupPadding()
+        {
+            if (!_column.IsCellPaddingNull)
+                return _column.CellPadding;
+
+            return _column.DataGrid!.CellPadding;
         }
 
         void IDataTriggerHost.Execute(IDataTrigger trigger, object? value)

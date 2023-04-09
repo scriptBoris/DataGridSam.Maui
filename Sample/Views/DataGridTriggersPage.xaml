@@ -26,6 +26,12 @@
                                  PropertyName="BirthDate"
                                  StringFormat="{}{0:dd.MM.yyyy}"
                                  CellHorizontalTextAlignment="End">
+            <datagrid:DataGridColumn.CellPadding>
+                <OnPlatform x:TypeArguments="Thickness">
+                    <On Platform="WinUI" Value="5, 5, 15, 5"/>
+                </OnPlatform>
+            </datagrid:DataGridColumn.CellPadding>
+            
             <datagrid:DataGridColumn.CellTriggers>
                 <datagrid:CellTrigger Binding="{Binding IsOldFag}"
                                       Value="True"

@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.Maui.Converters;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +15,7 @@ namespace DataGridSam
     {
         public DataGrid? DataGrid { get; private set; }
         public int Index { get; private set; } = -1;
+        public bool IsCellPaddingNull { get; private set; } = true;
 
         #region bindable props
         // property name
@@ -186,6 +189,26 @@ namespace DataGridSam
         {
             get => GetValue(CellVerticalTextAlignmentProperty) as TextAlignment?;
             set => SetValue(CellVerticalTextAlignmentProperty, value);
+        }
+
+        // cell padding
+        public static readonly BindableProperty CellPaddingProperty = BindableProperty.Create(
+            nameof(CellPadding),
+            typeof(Thickness),
+            typeof(DataGridColumn),
+            new Thickness(-322, 0, 0, 0),
+            propertyChanged: (b,o,n) =>
+            {
+                if (b is DataGridColumn self)
+                    self.IsCellPaddingNull = ((Thickness)n).Left == -322;
+
+                Draw(b,o,n);
+            }
+        );
+        public Thickness CellPadding
+        {
+            get => (Thickness)GetValue(CellPaddingProperty);
+            set => SetValue(CellPaddingProperty, value);
         }
         #endregion bindable props
 

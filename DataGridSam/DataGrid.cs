@@ -346,6 +346,20 @@ namespace DataGridSam
             set => SetValue(CellVerticalTextAlignmentProperty, value);
         }
 
+        // cell padding
+        public static readonly BindableProperty CellPaddingProperty = BindableProperty.Create(
+            nameof(CellPadding),
+            typeof(Thickness),
+            typeof(DataGrid),
+            new Thickness(0),
+            propertyChanged: Draw
+        );
+        public Thickness CellPadding
+        {
+            get => (Thickness)GetValue(CellPaddingProperty);
+            set => SetValue(CellPaddingProperty, value);
+        }
+
         // row triggers
         public static readonly BindableProperty RowTriggersProperty = BindableProperty.Create(
             nameof(RowTriggers),

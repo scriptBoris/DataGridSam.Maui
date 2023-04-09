@@ -19,7 +19,8 @@
                   HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
                   HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
                   CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
-                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
+                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                  CellPadding="5">
         <sam:DataGridColumn Title="First name"
                             PropertyName="FirstName"/>
 
@@ -30,7 +31,13 @@
                             Width="100"
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}"
-                            CellHorizontalTextAlignment="End"/>
+                            CellHorizontalTextAlignment="End">
+            <sam:DataGridColumn.CellPadding>
+                <OnPlatform x:TypeArguments="Thickness" Default="5">
+                    <On Platform="WinUI" Value="5, 5, 15, 5"/>
+                </OnPlatform>
+            </sam:DataGridColumn.CellPadding>
+        </sam:DataGridColumn>
     </sam:DataGrid>
     
 </ContentPage>
