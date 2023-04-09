@@ -16,7 +16,7 @@
                   BordersThickness="1"
                   HeaderFontSize="16"
                   HeaderHorizontalAlignment="Center"
-                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#AAA}"
+                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
                   HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
                   CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
                   CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
@@ -26,36 +26,11 @@
         <sam:DataGridColumn Title="Last name"
                             CellHorizontalTextAlignment="Start"
                             PropertyName="LastName"/>
-        
-        <sam:DataGridColumn Title="Test"
-                            CellHorizontalTextAlignment="End"
-                            PropertyName="LastName"/>
 
         <sam:DataGridColumn Title="Birth date"
                             Width="100"
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}"
-                            CellHorizontalTextAlignment="End">
-            <!--<sam:DataGridColumn.CellTriggers>
-                <sam:CellTrigger Binding="{Binding IsOldFag}"
-                                 Value="True"
-                                 TextColor="Yellow"
-                                 FontAttributes="Bold"/>
-            </sam:DataGridColumn.CellTriggers>-->
-        </sam:DataGridColumn>
-
-        <!--row triggers-->
-        <!--<sam:DataGrid.RowTriggers>
-            <sam:RowTrigger Binding="{Binding IsAdmin}"
-                            Value="True"
-                            BackgroundColor="#833"
-                            TextColor="White"
-                            FontSize="18"/>
-
-            <sam:RowTrigger Binding="{Binding IsManager}"
-                            Value="True"
-                            BackgroundColor="#225"
-                            TextColor="White"/>
-        </sam:DataGrid.RowTriggers>-->
+                            CellHorizontalTextAlignment="End"/>
     </sam:DataGrid>
 </ContentPage>

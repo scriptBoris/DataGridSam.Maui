@@ -8,7 +8,10 @@
         <Button Text="Sample DataGrid"
                 Clicked="Button_Clicked"/>
 
-        <Button Text="Default MAUI Collection"
+        <Button Text="Default MAUI Collection (for compare)"
                 Clicked="Button_Clicked_1"/>
+
+        <Button Text="Triggers"
+                Clicked="Button_Clicked_2"/>
     </VerticalStackLayout>
 </ContentPage>
