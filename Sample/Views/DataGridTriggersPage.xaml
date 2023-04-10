@@ -14,7 +14,8 @@
                        HeaderTextColor="{AppThemeBinding Light=#333, Dark=#CCC}"
                        HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
                        CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
-                       CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
+                       CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                       CellPadding="5">
         <datagrid:DataGridColumn Title="First name"
                                  PropertyName="FirstName"/>
 

@@ -21,4 +21,14 @@ public partial class MainPage : ContentPage
     {
         Navigation.PushAsync(new DataGridTriggersPage());
     }
+
+    private void Button_Clicked_3(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DataGridColorizedColumnsPage());
+    }
+
+    private void Button_Clicked_4(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DataGridColorizedColumnsAndTriggersPage());
+    }
 }

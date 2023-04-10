@@ -60,6 +60,8 @@ namespace DataGridSam
             }
         }
 
+        public Color? RememberBackgroundColor { get; private set; }
+
         public View Content { get; private set; }
         public Color? BackgroundColor { get; set; }
         public Color? TextColor { get; set; }
@@ -72,7 +74,7 @@ namespace DataGridSam
         {
             var bg = ResolveProperty<Color>(
                 BackgroundColor,
-                _row.BackgroundColor,
+                _row.LogicalBackgroundColor,
                 _column.CellBackgroundColor,
                 _column.DataGrid!.CellBackgroundColor);
 
@@ -80,6 +82,7 @@ namespace DataGridSam
                 bg = Colors.Transparent;
 
             Content.BackgroundColor = bg;
+            RememberBackgroundColor = bg;
 
             if (Content is Label label)
             {

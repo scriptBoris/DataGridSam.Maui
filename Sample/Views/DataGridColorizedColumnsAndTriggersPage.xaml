@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
+             xmlns:models="clr-namespace:Sample.Models"
+             xmlns:vm="clr-namespace:Sample.ViewModels"
+             x:Class="Sample.Views.DataGridColorizedColumnsAndTriggersPage"
+             x:DataType="vm:DataGridColorizedColumnsAndTriggersVm"
+             Title="Colorized columns and triggers">
+    <sam:DataGrid ItemsSource="{Binding Items}"
+                  RowSelectedCommand="{Binding CommandSelectItem}"
+                  BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                  BordersThickness="1"
+                  HeaderFontSize="16"
+                  HeaderHorizontalAlignment="Center"
+                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
+                  HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                  CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                  CellPadding="5">
+        <sam:DataGridColumn Title="First name"
+                            PropertyName="FirstName"/>
+
+        <sam:DataGridColumn Title="Last name"
+                            CellBackgroundColor="Gold"
+                            PropertyName="LastName"/>
+
+        <sam:DataGridColumn Title="Birth date"
+                            Width="100"
+                            CellBackgroundColor="Green"
+                            PropertyName="BirthDate"
+                            StringFormat="{}{0:dd.MM.yyyy}"
+                            CellHorizontalTextAlignment="End">
+            <sam:DataGridColumn.CellPadding>
+                <OnPlatform x:TypeArguments="Thickness" Default="5">
+                    <On Platform="WinUI" Value="5, 5, 15, 5"/>
+                </OnPlatform>
+            </sam:DataGridColumn.CellPadding>
+
+            <sam:DataGridColumn.CellTriggers>
+                <sam:CellTrigger Binding="{Binding IsOldFag}"
+                                 Value="True"
+                                 TextColor="Yellow"
+                                 FontAttributes="Bold"/>
+            </sam:DataGridColumn.CellTriggers>
+        </sam:DataGridColumn>
+
+        <sam:DataGrid.RowTriggers>
+            <sam:RowTrigger Binding="{Binding IsAdmin}"
+                            Value="True"
+                            BackgroundColor="#833"
+                            TextColor="White"
+                            FontSize="18"/>
+
+            <sam:RowTrigger Binding="{Binding IsManager}"
+                            Value="True"
+                            BackgroundColor="#225"
+                            TextColor="White"/>
+        </sam:DataGrid.RowTriggers>
+    </sam:DataGrid>
+</ContentPage>

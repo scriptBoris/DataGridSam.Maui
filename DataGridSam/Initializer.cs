@@ -18,6 +18,7 @@ namespace DataGridSam
             builder.ConfigureMauiHandlers(hand =>
             {
                 hand.AddHandler(typeof(DGCollection), typeof(DGCollectionHandler));
+                hand.AddHandler(typeof(Row), typeof(RowHandler));
             });
             return builder;
         }

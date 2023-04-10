@@ -39,7 +39,11 @@ namespace Sample.ViewModels
                     .Select(x => x.ToString())
                     .ToArray();
 
-                string? res = await App.Current?.MainPage?.DisplayActionSheet("Select rank", cancel, null!, items);
+                string? res = await App.Current?.MainPage?.DisplayActionSheet(
+                    $"Select rank for\n{user.FirstName} {user.LastName}", 
+                    cancel, 
+                    null!,
+                    items);
                 if (res == null || res == cancel)
                     return;
 

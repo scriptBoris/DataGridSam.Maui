@@ -13,5 +13,11 @@
 
         <Button Text="Triggers"
                 Clicked="Button_Clicked_2"/>
+
+        <Button Text="Colorized columns"
+                Clicked="Button_Clicked_3"/>
+
+        <Button Text="Colorized columns and triggers"
+                Clicked="Button_Clicked_4"/>
     </VerticalStackLayout>
 </ContentPage>

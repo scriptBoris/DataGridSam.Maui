@@ -20,11 +20,16 @@ namespace DataGridSam
 
         private INotifyPropertyChanged? lastContext;
         private IList<IDataTrigger>? triggers;
+        private Color rememberBG;
+        private bool isPressed;
 
         public Row(DataGrid dataGrid)
         {
             _dataGrid = dataGrid;
             _cells = new Cell[dataGrid.Columns.Count];
+
+            BackgroundColor = dataGrid.CellBackgroundColor;
+            rememberBG = BackgroundColor;
 
             for (int i = 0; i < dataGrid.Columns.Count; i++)
             {
@@ -36,12 +41,20 @@ namespace DataGridSam
             }
         }
 
+        public Color? LogicalBackgroundColor { get; private set; }
         public Color? TextColor { get; set; }
         public double? FontSize { get; set; }
         public FontAttributes? FontAttributes { get; set; }
         public TextAlignment? VerticalTextAlignment { get; set; }
         public TextAlignment? HorizontalTextAlignment { get; set; }
+        public Color TapColor => _dataGrid.TapSelectedColor;
+
         private double[] Widths => _dataGrid.CachedWidths;
+        private IDispatcherTimer? Timer { get; set; }
+        //{
+        //    get => _dataGrid.Timer;
+        //    set => _dataGrid.Timer = value;
+        //}
 
         protected override void OnBindingContextChanged()
         {
@@ -136,12 +149,17 @@ namespace DataGridSam
                 _enabledTriggers.Remove(trigger);
             }
 
-            BackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+            //BackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+            var bg = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
             TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
             FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
             FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
             VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
             HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
+
+            BackgroundColor = bg ?? _dataGrid.CellBackgroundColor;
+            rememberBG = BackgroundColor;
+            LogicalBackgroundColor = bg;
 
             Draw();
         }
@@ -230,6 +248,141 @@ namespace DataGridSam
             }
 
             return result;
+        }
+
+        public void OnTapStart_Common()
+        {
+            this.ColorTo(BackgroundColor, TapColor, (c) => RunBgForAnimation(c), 100);
+            OnTapStart();
+        }
+
+        public void OnTapFinish_Common(bool isThrowTap, bool forceLongTap = false)
+        {
+            this.CancelAnimation();
+            var cellsRemembers = _cells.Select(x => x.RememberBackgroundColor ?? Colors.Transparent).ToArray();
+            var anim = new Animation(x => EndBgForAnimation(x, rememberBG, cellsRemembers), 0, 1);
+            anim.Commit(this, "ColorTo", length: 400);
+
+            if (isThrowTap)
+                OnTapFinish(forceLongTap ? ThrowTapMode.LongTap : ThrowTapMode.Tap);
+            else
+                OnTapFinish(ThrowTapMode.Cancel);
+        }
+
+        public void OnTapStart()
+        {
+            isPressed = true;
+            if (Timer == null)
+            {
+                Timer = this.Dispatcher.CreateTimer();
+                Timer.Interval = TimeSpan.FromMilliseconds(1000);
+                Timer.IsRepeating = false;
+                Timer.Tick += Timer_Tick;
+                Timer.Start();
+            }
+            else
+            {
+                Timer.Stop();
+                Timer.Start();
+            }
+        }
+
+        public void OnTapFinish(ThrowTapMode mode)
+        {
+            if (!isPressed)
+                return;
+
+            isPressed = false;
+            Timer?.Stop();
+
+            var finalMode = mode;
+            if (mode == ThrowTapMode.LongTap && _dataGrid.RowLongSelectedCommand == null)
+                finalMode = ThrowTapMode.Tap;
+
+            switch (finalMode)
+            {
+                case ThrowTapMode.Tap:
+                    bool can = _dataGrid.RowSelectedCommand?.CanExecute(BindingContext) ?? false;
+                    if (can)
+                        _dataGrid.RowSelectedCommand?.Execute(BindingContext);
+                    break;
+
+                case ThrowTapMode.LongTap:
+                    bool canLong = _dataGrid.RowLongSelectedCommand?.CanExecute(BindingContext) ?? false;
+                    if (canLong)
+                        _dataGrid.RowLongSelectedCommand?.Execute(BindingContext);
+                    break;
+
+                case ThrowTapMode.Cancel:
+                default:
+                    break;
+            }
+        }
+
+        private void Timer_Tick(object? sender, EventArgs e)
+        {
+            OnTapFinish(ThrowTapMode.LongTap);
+        }
+
+        private void RunBgForAnimation(Color color)
+        {
+            BackgroundColor = color;
+            foreach (var item in _cells)
+                item.Content.BackgroundColor = color;
+        }
+
+        private void EndBgForAnimation(double x, Color bg, Color[] cellsBg)
+        {
+            BackgroundColor = ViewExtensions.Mix(BackgroundColor, bg, x);
+
+            for (int i = 0; i < _cells.Length; i++)
+            {
+                var item = _cells[i];
+                var bgitem = cellsBg[i];
+                item.Content.BackgroundColor = ViewExtensions.Mix(item.Content.BackgroundColor ?? Colors.Transparent, bgitem, x);
+            }
+        }
+
+        public enum ThrowTapMode
+        {
+            Cancel,
+            Tap,
+            LongTap,
+        }
+    }
+
+    internal static class ViewExtensions
+    {
+        public static Task<bool> ColorTo(this VisualElement self, Color fromColor, Color toColor, Action<Color> callback, uint length = 250, Easing easing = null)
+        {
+            Func<double, Color> transform = (t) =>
+            {
+                return Mix(fromColor, toColor, t);
+            };
+            return ColorAnimation(self, "ColorTo", transform, callback, length, easing);
+        }
+
+        public static void CancelAnimation(this VisualElement self)
+        {
+            self.AbortAnimation("ColorTo");
+        }
+
+        public static Color Mix(Color fromColor, Color toColor, double t)
+        {
+            return Color.FromRgba(
+                    fromColor.Red + t * (toColor.Red - fromColor.Red),
+                    fromColor.Green + t * (toColor.Green - fromColor.Green),
+                    fromColor.Blue + t * (toColor.Blue - fromColor.Blue),
+                    fromColor.Alpha + t * (toColor.Alpha - fromColor.Alpha));
+        }
+
+        static Task<bool> ColorAnimation(VisualElement element, string name, Func<double, Color> transform, Action<Color> callback, uint length, Easing easing)
+        {
+            easing = easing ?? Easing.Linear;
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            element.Animate<Color>(name, transform, callback, 16, length, easing, (v, c) => taskCompletionSource.SetResult(c));
+            return taskCompletionSource.Task;
         }
     }
 }

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
+             xmlns:models="clr-namespace:Sample.Models"
+             xmlns:vm="clr-namespace:Sample.ViewModels"
+             x:Class="Sample.Views.DataGridColorizedColumnsPage"
+             x:DataType="vm:DataGridColorizedColumnsVm"
+             Title="Colorized columns"
+             BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
+    <sam:DataGrid ItemsSource="{Binding Users}"
+                  BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                  BordersThickness="1"
+                  HeaderFontSize="16"
+                  HeaderHorizontalAlignment="Center"
+                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
+                  HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                  CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                  CellPadding="5">
+        <sam:DataGridColumn Title="First name"
+                            PropertyName="FirstName"/>
+
+        <sam:DataGridColumn Title="Last name"
+                            CellBackgroundColor="Green"
+                            PropertyName="LastName"/>
+
+        <sam:DataGridColumn Title="Rank"
+                            CellBackgroundColor="Gold"
+                            Width="150"
+                            PropertyName="Rank"/>
+
+        <sam:DataGridColumn Title="Birth date"
+                            Width="100"
+                            PropertyName="BirthDate"
+                            StringFormat="{}{0:dd.MM.yyyy}"
+                            CellHorizontalTextAlignment="End">
+            <sam:DataGridColumn.CellPadding>
+                <OnPlatform x:TypeArguments="Thickness" Default="5">
+                    <On Platform="WinUI" Value="5, 5, 15, 5"/>
+                </OnPlatform>
+            </sam:DataGridColumn.CellPadding>
+        </sam:DataGridColumn>
+    </sam:DataGrid>
+</ContentPage>

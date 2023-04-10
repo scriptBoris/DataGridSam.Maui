@@ -169,6 +169,26 @@ namespace DataGridSam
             set => SetValue(RowLongSelectedCommandProperty, value);
         }
 
+        // tap selected color
+        public static readonly BindableProperty TapSelectedColorProperty = BindableProperty.Create(
+            nameof(TapSelectedColor),
+            typeof(Color),
+            typeof(DataGrid),
+            Colors.Gray,
+            //propertyChanged: Draw
+            propertyChanged: (b,o,n) =>
+            {
+#if ANDROID
+                if (b is DataGrid self) self.Draw();
+#endif
+            }
+        );
+        public Color TapSelectedColor
+        {
+            get => (Color)GetValue(TapSelectedColorProperty);
+            set => SetValue(TapSelectedColorProperty, value);
+        }
+
         // header font size
         public static readonly BindableProperty HeaderFontSizeProperty = BindableProperty.Create(
             nameof(HeaderFontSize),
@@ -377,9 +397,10 @@ namespace DataGridSam
             Draw();
         }
         public IList<RowTrigger> RowTriggers => (IList<RowTrigger>)GetValue(RowTriggersProperty);
-        #endregion bindable props
+#endregion bindable props
 
         internal double[] CachedWidths { get; set; } = Array.Empty<double>();
+        internal IDispatcherTimer? Timer { get; set; }
 
         protected override void OnParentSet()
         {
