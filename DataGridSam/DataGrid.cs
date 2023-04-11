@@ -169,6 +169,23 @@ namespace DataGridSam
             set => SetValue(RowLongSelectedCommandProperty, value);
         }
 
+        // long tap timeout
+        public static readonly BindableProperty LongTapTimeoutProperty = BindableProperty.Create(
+            nameof(LongTapTimeout),
+            typeof(int),
+            typeof(DataGrid),
+            500
+        );
+        /// <summary>
+        /// Timeout to trigger RowLongSelectedCommand, value is specified in milliseconds
+        /// default: 500
+        /// </summary>
+        public int LongTapTimeout
+        {
+            get => (int)GetValue(LongTapTimeoutProperty);
+            set => SetValue(LongTapTimeoutProperty, value);
+        }
+
         // tap selected color
         public static readonly BindableProperty TapSelectedColorProperty = BindableProperty.Create(
             nameof(TapSelectedColor),

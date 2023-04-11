@@ -275,7 +275,7 @@ namespace DataGridSam
             if (Timer == null)
             {
                 Timer = this.Dispatcher.CreateTimer();
-                Timer.Interval = TimeSpan.FromMilliseconds(1000);
+                Timer.Interval = TimeSpan.FromMilliseconds(_dataGrid.LongTapTimeout);
                 Timer.IsRepeating = false;
                 Timer.Tick += Timer_Tick;
                 Timer.Start();
