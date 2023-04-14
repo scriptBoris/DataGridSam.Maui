@@ -9,7 +9,8 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 using WHorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
 using WVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
-using Microsoft.UI.Xaml.Data;
+using Microsoft.Maui.Controls.Platform;
+using System;
 
 namespace DataGridSam.Handlers
 {
@@ -41,22 +42,36 @@ namespace DataGridSam.Handlers
             Update(PlatformView);
         }
 
-        public async Task<Row?> GetRow(int index)
+        public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
         {
-            var c = PlatformView.ItemsPanelRoot.Children;
-            int count = 0;
-            UIElement? item = null;
-            while(count <3)
-            {
-                item = c[index];
-                if (item == null)
-                {
-                    await Task.Delay(50);
-                    count++;
-                }
-            }
+            return GetRowFast(index);
+        }
 
-            return null;
+        public Row? GetRowFast(int index)
+        {
+            int offset = GetOffset();
+            if (offset < 0)
+                return null;
+
+            var item = PlatformView.ItemsPanelRoot.Children[index - offset] as Microsoft.UI.Xaml.Controls.ListViewItem;
+            if (item == null)
+                return null;
+
+            var rootItem = (ItemContentControl)item.ContentTemplateRoot;
+            var rowPanel = (LayoutPanelLinked)rootItem.Content;
+            var row = rowPanel.Handler.Proxy;
+
+            return row;
+        }
+
+        private int GetOffset()
+        {
+            var item = PlatformView.ItemsPanelRoot.Children.FirstOrDefault() as Microsoft.UI.Xaml.Controls.ListViewItem;
+            if (item == null)
+                return -1;
+
+            int id = PlatformView.Items.IndexOf(item.Content);
+            return id;
         }
 
         private void Update(ListViewBase ls)

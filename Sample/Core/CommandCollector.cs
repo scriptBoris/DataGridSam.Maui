@@ -25,7 +25,7 @@ namespace Sample.Core
             return res;
         }
 
-        public static ICommand GetCommandLongSelectUser()
+        public static ICommand GetCommandLongSelectUser(Action<User>? onEdited = null)
         {
             var res = new Command(async (x) =>
             {
@@ -47,6 +47,7 @@ namespace Sample.Core
 
                     var newRank = Enum.Parse<Ranks>(res);
                     user.Rank = newRank;
+                    onEdited?.Invoke(user);
                 }
             });
             return res;

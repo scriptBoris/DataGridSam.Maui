@@ -16,7 +16,7 @@ namespace DataGridSam.Handlers
 
         protected override LayoutPanel CreatePlatformView()
         {
-            var n = base.CreatePlatformView();
+            var n = new LayoutPanelLinked(this);
             n.PointerCanceled += N_PointerCanceled;
             n.PointerPressed += N_PointerPressed;
             n.PointerReleased += N_PointerReleased;
@@ -59,5 +59,15 @@ namespace DataGridSam.Handlers
 
             isPressed = false;
         }
+    }
+
+    public class LayoutPanelLinked : LayoutPanel
+    {
+        public LayoutPanelLinked(RowHandler handler)
+        {
+            Handler = handler;
+        }
+
+        public RowHandler Handler { get; private set; }
     }
 }

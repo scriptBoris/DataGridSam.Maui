@@ -554,18 +554,17 @@ namespace DataGridSam
             return new Size(widthConstraint, h);
         }
 
-        public async Task<Row?> GetRowAsync(int index)
+        public Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
         {
-            Row? row = null;
             if (_collection.Handler is DGCollectionHandler h)
             {
 #if ANDROID
-                row = await h.GetRow(index);
+                return h.GetRowAsync(index, timeout);
 #elif WINDOWS
-                row = await h.GetRow(index);
+                return h.GetRowAsync(index, timeout);
 #endif
             }
-            return row;
+            return Task.FromResult<Row?>(null);
         }
     }
 }
