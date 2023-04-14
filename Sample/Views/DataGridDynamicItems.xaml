@@ -2,14 +2,19 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
-             xmlns:models="clr-namespace:Sample.Models"
              xmlns:views="clr-namespace:Sample.Views"
-             x:Class="Sample.Views.DataGridColorizedColumnsAndTriggersPage"
-             x:DataType="views:DataGridColorizedColumnsAndTriggersPage"
-             Title="Colorized columns and triggers">
+             x:Class="Sample.Views.DataGridDynamicItemsPage"
+             x:DataType="views:DataGridDynamicItemsPage"
+             Title="Dynamic items">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add"
+                     Command="{Binding CommandAddItem}"/>
+    </ContentPage.ToolbarItems>
+    
     <sam:DataGrid ItemsSource="{Binding Items}"
-                  RowSelectedCommand="{Binding CommandSelectItem}"
-                  RowLongSelectedCommand="{Binding CommandLongSelectItem}"
+                  RowSelectedCommand="{Binding CommandSelectedRow}"
+                  RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
                   BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
                   BordersThickness="1"
                   HeaderFontSize="16"
@@ -18,17 +23,16 @@
                   HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
                   CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
                   CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
-                  CellPadding="5">
+                  CellPadding="5"
+                  x:Name="dataGird">
         <sam:DataGridColumn Title="First name"
                             PropertyName="FirstName"/>
 
         <sam:DataGridColumn Title="Last name"
-                            CellBackgroundColor="Gold"
                             PropertyName="LastName"/>
 
         <sam:DataGridColumn Title="Birth date"
                             Width="100"
-                            CellBackgroundColor="Green"
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}"
                             CellHorizontalTextAlignment="End">
@@ -37,26 +41,6 @@
                     <On Platform="WinUI" Value="5, 5, 15, 5"/>
                 </OnPlatform>
             </sam:DataGridColumn.CellPadding>
-
-            <sam:DataGridColumn.CellTriggers>
-                <sam:CellTrigger Binding="{Binding IsOldFag}"
-                                 Value="True"
-                                 TextColor="Yellow"
-                                 FontAttributes="Bold"/>
-            </sam:DataGridColumn.CellTriggers>
         </sam:DataGridColumn>
-
-        <sam:DataGrid.RowTriggers>
-            <sam:RowTrigger Binding="{Binding IsAdmin}"
-                            Value="True"
-                            BackgroundColor="#833"
-                            TextColor="White"
-                            FontSize="18"/>
-
-            <sam:RowTrigger Binding="{Binding IsManager}"
-                            Value="True"
-                            BackgroundColor="#225"
-                            TextColor="White"/>
-        </sam:DataGrid.RowTriggers>
     </sam:DataGrid>
 </ContentPage>

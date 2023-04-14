@@ -19,5 +19,8 @@
 
         <Button Text="Colorized columns and triggers"
                 Clicked="Button_Clicked_4"/>
+
+        <Button Text="Dynamic items"
+                Clicked="Button_Clicked_5"/>
     </VerticalStackLayout>
 </ContentPage>

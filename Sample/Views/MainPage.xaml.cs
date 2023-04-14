@@ -31,4 +31,9 @@ public partial class MainPage : ContentPage
     {
         Navigation.PushAsync(new DataGridColorizedColumnsAndTriggersPage());
     }
+
+    private void Button_Clicked_5(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DataGridDynamicItemsPage());
+    }
 }

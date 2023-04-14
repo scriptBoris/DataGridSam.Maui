@@ -11,11 +11,12 @@ using System.Threading.Tasks;
 
 namespace DataGridSam
 {
-    public class Cell : IDataTriggerHost
+    public class Cell
     {
         private readonly List<IDataTrigger> _enabledTriggers = new();
         private readonly DataGridColumn _column;
         private readonly Row _row;
+
 
         public Cell(DataGridColumn column, Row row)
         {
@@ -60,7 +61,8 @@ namespace DataGridSam
             }
         }
 
-        public Color? RememberBackgroundColor { get; private set; }
+        internal Color? BeforeAnimationColor { get; private set; }
+        internal Color ExternalBackgroundColor { get; set; } = Colors.Transparent;
 
         public View Content { get; private set; }
         public Color? BackgroundColor { get; set; }
@@ -70,7 +72,7 @@ namespace DataGridSam
         public TextAlignment? VerticalTextAlignment { get; set; }
         public TextAlignment? HorizontalTextAlignment { get; set; }
 
-        public void Draw()
+        public void UpdateVisual()
         {
             var bg = ResolveProperty<Color>(
                 BackgroundColor,
@@ -82,7 +84,7 @@ namespace DataGridSam
                 bg = Colors.Transparent;
 
             Content.BackgroundColor = bg;
-            RememberBackgroundColor = bg;
+            BeforeAnimationColor = bg;
 
             if (Content is Label label)
             {
@@ -143,7 +145,7 @@ namespace DataGridSam
             return _column.DataGrid!.CellPadding;
         }
 
-        void IDataTriggerHost.Execute(IDataTrigger trigger, object? value)
+        internal void ExecuteTrigger(IDataTrigger trigger, object? value)
         {
             bool isEnabled = trigger.IsEqualValue(value);
 
@@ -164,7 +166,7 @@ namespace DataGridSam
             VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
             HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
 
-            Draw();
+            UpdateVisual();
         }
     }
 }

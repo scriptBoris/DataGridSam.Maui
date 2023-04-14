@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace DataGridSam
 {
-    public class Row : Layout, ILayoutManager, IDataTriggerHost
+    public class Row : Layout, ILayoutManager
     {
         private readonly DataGrid _dataGrid;
         private readonly Cell[] _cells;
@@ -20,8 +20,9 @@ namespace DataGridSam
 
         private INotifyPropertyChanged? lastContext;
         private IList<IDataTrigger>? triggers;
-        private Color rememberBG;
         private bool isPressed;
+        private Color beforeAnimationColor;
+        private Color externalBackgroundColor = Colors.Transparent;
 
         public Row(DataGrid dataGrid)
         {
@@ -29,7 +30,7 @@ namespace DataGridSam
             _cells = new Cell[dataGrid.Columns.Count];
 
             BackgroundColor = dataGrid.CellBackgroundColor;
-            rememberBG = BackgroundColor;
+            beforeAnimationColor = BackgroundColor;
 
             for (int i = 0; i < dataGrid.Columns.Count; i++)
             {
@@ -51,10 +52,6 @@ namespace DataGridSam
 
         private double[] Widths => _dataGrid.CachedWidths;
         private IDispatcherTimer? Timer { get; set; }
-        //{
-        //    get => _dataGrid.Timer;
-        //    set => _dataGrid.Timer = value;
-        //}
 
         protected override void OnBindingContextChanged()
         {
@@ -79,7 +76,7 @@ namespace DataGridSam
 
         private void Notify_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (triggers == null || triggers.Count == 0)
+            if (triggers == null || triggers.Count == 0 || BindingContext == null)
                 return;
 
             foreach (var trigger in triggers!)
@@ -90,15 +87,12 @@ namespace DataGridSam
 
                 if (e.PropertyName == binding.Path)
                 {
-                    object? value = BindingContext?.GetValueFromProperty(binding.Path);
-                    View view;
+                    object? value = BindingContext.GetValueFromProperty(binding.Path);
+                    Cell? cell = null;
                     if (trigger.CellTriggerId != null)
-                        view = _cells[trigger.CellTriggerId.Value].Content;
-                    else
-                        view = this;
+                        cell = _cells[trigger.CellTriggerId.Value];
 
-                    if (view is IDataTriggerHost h)
-                        h.Execute(trigger, value);
+                    cell?.ExecuteTrigger(trigger, value);
                 }
             }
         }
@@ -112,15 +106,11 @@ namespace DataGridSam
                     throw new NotSupportedException();
 
                 object? value = BindingContext?.GetValueFromProperty(binding.Path);
-
-                View view;
+                Cell? cell = null;
                 if (trigger.CellTriggerId != null)
-                    view = _cells[trigger.CellTriggerId.Value].Content;
-                else
-                    view = this;
+                    cell = _cells[trigger.CellTriggerId.Value];
 
-                if (view is IDataTriggerHost h)
-                    h.Execute(trigger, value);
+                cell?.ExecuteTrigger(trigger, value);
             }
         }
 
@@ -129,13 +119,16 @@ namespace DataGridSam
             this.triggers = triggers;
         }
 
-        public void Draw()
+        internal void UpdateVisual()
         {
+            BackgroundColor = LogicalBackgroundColor ?? _dataGrid.CellBackgroundColor;
+            beforeAnimationColor = BackgroundColor;
+
             foreach (var cell in _cells)
-                cell.Draw();
+                cell.UpdateVisual();
         }
 
-        void IDataTriggerHost.Execute(IDataTrigger trigger, object? value)
+        internal void ExecuteTrigger(IDataTrigger trigger, object? value)
         {
             bool isEnabled = trigger.IsEqualValue(value);
 
@@ -149,19 +142,14 @@ namespace DataGridSam
                 _enabledTriggers.Remove(trigger);
             }
 
-            //BackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
-            var bg = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+            LogicalBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
             TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
             FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
             FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
             VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
             HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
 
-            BackgroundColor = bg ?? _dataGrid.CellBackgroundColor;
-            rememberBG = BackgroundColor;
-            LogicalBackgroundColor = bg;
-
-            Draw();
+            UpdateVisual();
         }
 
         protected override ILayoutManager CreateLayoutManager()
@@ -252,16 +240,15 @@ namespace DataGridSam
 
         public void OnTapStart_Common()
         {
-            this.ColorTo(BackgroundColor, TapColor, (c) => RunBgForAnimation(c), 100);
+            this.CancelAnimation();
+            this.AnimateBackgroundColor(TapColor, 100);
             OnTapStart();
         }
 
         public void OnTapFinish_Common(bool isThrowTap, bool forceLongTap = false)
         {
             this.CancelAnimation();
-            var cellsRemembers = _cells.Select(x => x.RememberBackgroundColor ?? Colors.Transparent).ToArray();
-            var anim = new Animation(x => EndBgForAnimation(x, rememberBG, cellsRemembers), 0, 1);
-            anim.Commit(this, "ColorTo", length: 400);
+            this.AnimateBackgroundColorRestore(400);
 
             if (isThrowTap)
                 OnTapFinish(forceLongTap ? ThrowTapMode.LongTap : ThrowTapMode.Tap);
@@ -324,22 +311,38 @@ namespace DataGridSam
             OnTapFinish(ThrowTapMode.LongTap);
         }
 
-        private void RunBgForAnimation(Color color)
+        /// <summary>
+        /// Sets the background of the row and cells to the specified
+        /// </summary>
+        /// <param name="color">New color</param>
+        /// <param name="fill">Percent setup, from 0 to 1, where 1 is full setup color</param>
+        public void SetRowBackgroundColor(Color color, double fill = 1)
         {
-            BackgroundColor = color;
-            foreach (var item in _cells)
-                item.Content.BackgroundColor = color;
-        }
-
-        private void EndBgForAnimation(double x, Color bg, Color[] cellsBg)
-        {
-            BackgroundColor = ViewExtensions.Mix(BackgroundColor, bg, x);
+            BackgroundColor = VisualExtensions.MixColor(beforeAnimationColor, color, fill);
+            externalBackgroundColor = color;
 
             for (int i = 0; i < _cells.Length; i++)
             {
-                var item = _cells[i];
-                var bgitem = cellsBg[i];
-                item.Content.BackgroundColor = ViewExtensions.Mix(item.Content.BackgroundColor ?? Colors.Transparent, bgitem, x);
+                var cell = _cells[i];
+                var bgitem = cell.BeforeAnimationColor ?? Colors.Transparent;
+                cell.Content.BackgroundColor = VisualExtensions.MixColor(bgitem, color, fill);
+                cell.ExternalBackgroundColor = color;
+            }
+        }
+
+        /// <summary>
+        /// Restores the visual part of a string to the original DataGrid state
+        /// </summary>
+        /// <param name="fill">Percent resore, from 0 to 1, where 1 is full restore</param>
+        public void RestoreRowBackgroundColor(double fill = 1)
+        {
+            BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, beforeAnimationColor, fill);
+
+            for (int i = 0; i < _cells.Length; i++)
+            {
+                var cell = _cells[i];
+                var bgitem = cell.BeforeAnimationColor ?? Colors.Transparent;
+                cell.Content.BackgroundColor = VisualExtensions.MixColor(cell.ExternalBackgroundColor, bgitem, fill);
             }
         }
 
@@ -351,38 +354,56 @@ namespace DataGridSam
         }
     }
 
-    internal static class ViewExtensions
+    public static class VisualExtensions
     {
-        public static Task<bool> ColorTo(this VisualElement self, Color fromColor, Color toColor, Action<Color> callback, uint length = 250, Easing easing = null)
+        public const string AnimationName = "ColorTo";
+
+        public static Task<bool> AnimateBackgroundColorRestore(this Row self, uint length = 250, Easing? easing = null)
         {
-            Func<double, Color> transform = (t) =>
+            easing ??= Easing.Linear;
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            var anim = new Animation((x) =>
             {
-                return Mix(fromColor, toColor, t);
-            };
-            return ColorAnimation(self, "ColorTo", transform, callback, length, easing);
+                self.RestoreRowBackgroundColor(x);
+            }, 0, 1, easing);
+
+            anim.Commit(self, AnimationName, length: length, easing: easing, finished: (v, b) =>
+            {
+                taskCompletionSource.SetResult(b);
+            });
+            return taskCompletionSource.Task;
+        }
+
+        public static Task<bool> AnimateBackgroundColor(this Row self, Color toColor, uint length = 250, Easing? easing = null)
+        {
+            easing ??= Easing.Linear;
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+
+            var anim = new Animation((x) =>
+            {
+                self.SetRowBackgroundColor(toColor, x);
+            }, 0, 1, easing);
+
+            anim.Commit(self, AnimationName, length: length, easing: easing, finished: (v, b) =>
+            {
+                taskCompletionSource.SetResult(b);
+            });
+            return taskCompletionSource.Task;
         }
 
         public static void CancelAnimation(this VisualElement self)
         {
-            self.AbortAnimation("ColorTo");
+            self.AbortAnimation(AnimationName);
         }
 
-        public static Color Mix(Color fromColor, Color toColor, double t)
+        public static Color MixColor(Color fromColor, Color toColor, double t)
         {
-            return Color.FromRgba(
+            return Microsoft.Maui.Graphics.Color.FromRgba(
                     fromColor.Red + t * (toColor.Red - fromColor.Red),
                     fromColor.Green + t * (toColor.Green - fromColor.Green),
                     fromColor.Blue + t * (toColor.Blue - fromColor.Blue),
                     fromColor.Alpha + t * (toColor.Alpha - fromColor.Alpha));
-        }
-
-        static Task<bool> ColorAnimation(VisualElement element, string name, Func<double, Color> transform, Action<Color> callback, uint length, Easing easing)
-        {
-            easing = easing ?? Easing.Linear;
-            var taskCompletionSource = new TaskCompletionSource<bool>();
-
-            element.Animate<Color>(name, transform, callback, 16, length, easing, (v, c) => taskCompletionSource.SetResult(c));
-            return taskCompletionSource.Task;
         }
     }
 }

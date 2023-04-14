@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
              xmlns:models="clr-namespace:Sample.Models"
-             xmlns:vm="clr-namespace:Sample.ViewModels"
+             xmlns:views="clr-namespace:Sample.Views"
              x:Class="Sample.Views.DataGridSamplePage"
-             x:DataType="vm:DataGridSampleVm"
+             x:DataType="views:DataGridSamplePage"
              Title="Sample"
              BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
     

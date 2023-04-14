@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vm="clr-namespace:Sample.ViewModels"
              xmlns:models="clr-namespace:Sample.Models"
+             xmlns:views="clr-namespace:Sample.Views"
              x:Class="Sample.Views.DefaultCollectionPage"
-             x:DataType="vm:DefaultCollectionVm"
+             x:DataType="views:DefaultCollectionPage"
              Title="Default Collection">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding CommandAddItem}"
+                     Text="Add"/>
+    </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto, *"
           RowSpacing="0">
@@ -25,7 +30,8 @@
         
         <CollectionView Grid.Row="1"
                         ItemsSource="{Binding Items}"
-                        ItemSizingStrategy="MeasureAllItems">
+                        ItemSizingStrategy="MeasureAllItems"
+                        x:Name="collectionView">
 
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" 
@@ -52,10 +58,5 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-
-        <!--<Border Grid.RowSpan="2"
-                BackgroundColor="Transparent"
-                Stroke="#888"
-                StrokeThickness="1"/>-->
     </Grid>
 </ContentPage>

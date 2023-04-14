@@ -67,7 +67,7 @@ namespace DataGridSam.Internal
                     // triggers
                     row.SetTriggers(triggers);
 
-                    row.Draw();
+                    row.UpdateVisual();
                     return row;
                 }
                 catch (Exception ex)

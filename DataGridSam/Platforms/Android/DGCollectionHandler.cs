@@ -42,6 +42,30 @@ namespace DataGridSam.Handlers
             Update(PlatformView);
         }
 
+        public async Task<Row?> GetRow(int index)
+        {
+            var position = PlatformView.FindViewHolderForAdapterPosition(index);
+            if (position == null)
+            {
+                int tryCount = 0;
+                while(tryCount < 10)
+                {
+                    position = PlatformView.FindViewHolderForAdapterPosition(index);
+                    await Task.Delay(50);
+                    tryCount++;
+                }
+            }
+
+            if (position != null)
+            {
+                var item = position as Microsoft.Maui.Controls.Handlers.Items.TemplatedItemViewHolder;
+                if (item?.View is Row row)
+                    return row;
+            }
+
+            return null;
+        }
+
         private void Update(RecyclerView res)
         {
             if (last != null)

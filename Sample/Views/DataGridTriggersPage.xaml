@@ -2,9 +2,9 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:datagrid="clr-namespace:DataGridSam;assembly=DataGridSam"
-             xmlns:vm="clr-namespace:Sample.ViewModels"
+             xmlns:views="clr-namespace:Sample.Views"
              x:Class="Sample.Views.DataGridTriggersPage"
-             x:DataType="vm:DataGridTriggersVm"
+             x:DataType="views:DataGridTriggersPage"
              Title="DataGrid triggers">
     <datagrid:DataGrid ItemsSource="{Binding Items}"
                        BordersColor="{AppThemeBinding Light=#222, Dark=#888}"

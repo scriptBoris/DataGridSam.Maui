@@ -9,12 +9,13 @@ using WThickness = Microsoft.UI.Xaml.Thickness;
 using WHorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
 using WVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
+using Microsoft.UI.Xaml.Data;
 
 namespace DataGridSam.Handlers
 {
     internal partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     {
-        private DGCollection View => (DGCollection)VirtualView;
+        private DGCollection Proxy => (DGCollection)VirtualView;
 
         protected override ListViewBase CreatePlatformView()
         {
@@ -26,7 +27,7 @@ namespace DataGridSam.Handlers
         public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
         {
             var res = base.GetDesiredSize(widthConstraint, heightConstraint);
-            View.OnVisibleHeight(res.Height);
+            Proxy.OnVisibleHeight(res.Height);
             return res;
         }
 
@@ -40,10 +41,28 @@ namespace DataGridSam.Handlers
             Update(PlatformView);
         }
 
+        public async Task<Row?> GetRow(int index)
+        {
+            var c = PlatformView.ItemsPanelRoot.Children;
+            int count = 0;
+            UIElement? item = null;
+            while(count <3)
+            {
+                item = c[index];
+                if (item == null)
+                {
+                    await Task.Delay(50);
+                    count++;
+                }
+            }
+
+            return null;
+        }
+
         private void Update(ListViewBase ls)
         {
-            var color = View.BorderColor.ToWindowsColor();
-            var width = new WThickness(0, 0, 0, View.BorderThickness);
+            var color = Proxy.BorderColor.ToWindowsColor();
+            var width = new WThickness(0, 0, 0, Proxy.BorderThickness);
 
             // TODO WINDOWS: Сделать удаление сепаратора для последнего элемента
             ls.ItemContainerStyle = new Microsoft.UI.Xaml.Style(typeof(ListViewItem))

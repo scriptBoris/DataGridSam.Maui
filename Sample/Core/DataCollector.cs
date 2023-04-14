@@ -91,7 +91,7 @@ namespace Sample.Core
         }
 
         private static ObservableCollection<User>? users;
-        public static ObservableCollection<User> GenerateUsers(int count = 500)
+        public static ObservableCollection<User> GenerateUsers(int count = 1000)
         {
             if (users == null)
             {
