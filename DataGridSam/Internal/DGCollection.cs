@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataGridSam.Internal
 {
-    internal class DGCollection : CollectionView
+    public class DGCollection : CollectionView
     {
         private readonly DataGrid _dataGrid;
         private Color _borderColor = Colors.Black;

@@ -7,12 +7,10 @@ using AndroidX.RecyclerView.Widget;
 using DataGridSam.Internal;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Controls.Handlers.Items;
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Org.W3c.Dom;
 
 namespace DataGridSam.Handlers
 {
-    internal partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
+    public partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     {
         private readonly List<GetRowRequestItem> tcsList = new();
         private DividerItemDecoration? last;
@@ -144,7 +142,7 @@ namespace DataGridSam.Handlers
         }
     }
 
-    internal class ScrollListener : RecyclerView.OnScrollListener
+    public class ScrollListener : RecyclerView.OnScrollListener
     {
         private readonly DGCollectionHandler handler;
 

@@ -6,13 +6,14 @@ using System.Threading.Tasks;
 
 namespace DataGridSam.Handlers
 {
-    internal partial class DGCollectionHandler
+    public partial class DGCollectionHandler
     {
     }
 
-    internal interface IDGCollectionHandler
+    public interface IDGCollectionHandler
     {
         void UpdateBorderColor();
         void UpdateBorderWidth();
+        Task<Row?> GetRowAsync(int index, TimeSpan? timeout);
     }
 }

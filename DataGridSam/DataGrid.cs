@@ -433,16 +433,6 @@ namespace DataGridSam
             Draw();
         }
 
-        public void ScrollTo(object item, object? group = null, ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
-        {
-            _collection.ScrollTo(item, group, position, animate);
-        }
-
-        public void ScrollTo(int index, int groupIndex = -1, ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
-        {
-            _collection.ScrollTo(index, groupIndex, position, animate);
-        }
-
         internal void Draw()
         {
             if (!isInitialized)
@@ -554,16 +544,21 @@ namespace DataGridSam
             return new Size(widthConstraint, h);
         }
 
+        public void ScrollTo(object item, object? group = null, ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
+        {
+            _collection.ScrollTo(item, group, position, animate);
+        }
+
+        public void ScrollTo(int index, int groupIndex = -1, ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)
+        {
+            _collection.ScrollTo(index, groupIndex, position, animate);
+        }
+
         public Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
         {
-            if (_collection.Handler is DGCollectionHandler h)
-            {
-#if ANDROID
+            if (_collection.Handler is IDGCollectionHandler h)
                 return h.GetRowAsync(index, timeout);
-#elif WINDOWS
-                return h.GetRowAsync(index, timeout);
-#endif
-            }
+
             return Task.FromResult<Row?>(null);
         }
     }

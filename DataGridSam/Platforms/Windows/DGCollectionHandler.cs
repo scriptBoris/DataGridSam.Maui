@@ -14,7 +14,7 @@ using System;
 
 namespace DataGridSam.Handlers
 {
-    internal partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
+    public partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     {
         private DGCollection Proxy => (DGCollection)VirtualView;
 
