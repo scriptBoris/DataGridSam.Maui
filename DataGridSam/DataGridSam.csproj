@@ -18,7 +18,7 @@
 		<Nullable>enable</Nullable>
 		<PackageId>DataGridSam.Maui</PackageId>
 		<Title>DataGridSam.Maui</Title>
-		<Version>0.9.7-beta</Version>
+		<Version>0.9.8-beta</Version>
 		<Authors>Boris Krit</Authors>
 		<Product>DataGridSam.Maui</Product>
 		<PackageOutputPath>$(SolutionDir)Nuget\</PackageOutputPath>
