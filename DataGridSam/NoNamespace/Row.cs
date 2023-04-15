@@ -177,6 +177,13 @@ namespace DataGridSam
 
         public Size Measure(double widthConstraint, double heightConstraint)
         {
+            // на iOS срабатывает Measure строки быстре, чем в родительских контейнерах,
+            // по этому первично надо вычислить кэш ширины ячеек строк
+#if IOS
+            if (Widths.Length == 0)
+                _dataGrid.UpdateCellsWidthCache(widthConstraint, false);
+#endif
+
             double h = 0;
             for (int i = 0; i < _cells.Length; i++)
             {
@@ -192,7 +199,7 @@ namespace DataGridSam
             return new Size(widthConstraint, h);
         }
 
-        internal static double[] Calculate(GridLength[] viewRules, double availableWidth)
+        internal static double[] CalculateWidthRules(GridLength[] viewRules, double availableWidth)
         {
             double[] result = new double[viewRules.Length];
             double totalSizeStar = 0;

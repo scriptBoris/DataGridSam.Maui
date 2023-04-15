@@ -110,22 +110,6 @@ namespace DataGridSam.Internal
             }
         }
 
-        internal void SetupHeight(double height)
-        {
-            return;
-
-            if (Height == height)
-                return;
-
-            foreach (var item in Children)
-            {
-                var v = (View)item;
-                v.HeightRequest = height;
-            }
-            HeightRequest = height;
-            Debug.WriteLine($"Mask height: {height}");
-        }
-
         private void TryCreateInternalLine(int id, int of, Color borderColor, double borderWidth)
         {
             if (id + 1 == of)

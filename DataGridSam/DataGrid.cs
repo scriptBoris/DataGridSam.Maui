@@ -20,6 +20,7 @@ namespace DataGridSam
         private readonly Mask _mask;
         private readonly RowTemplateGenerator _generator = new();
 
+        private double cachedWidth;
         private bool isInitialized;
 
         public DataGrid()
@@ -43,9 +44,6 @@ namespace DataGridSam
             // mask
             _mask = new(this);
             Children.Add(_mask);
-
-            _collection.VisibleHeightChanged += (o, e) => OnHeightChanged(); ;
-            _header.SizeChanged += (o, e) => OnHeightChanged();
         }
 
         #region bindable props
@@ -443,15 +441,6 @@ namespace DataGridSam
             _collection.ItemTemplate = _generator.Generate(this);
         }
 
-        private void OnHeightChanged()
-        {
-            if (_header.Height < 0 || _collection.VisibleHeight < 0)
-                return;
-
-            double h = _collection.VisibleHeight + _header.Height;
-            _mask.SetupHeight(h);
-        }
-
         private void Cols_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
             if (!isInitialized)
@@ -460,7 +449,7 @@ namespace DataGridSam
             for (int i = 0; i < Columns.Count; i++)
                 Columns[i].SetParent(this, i);
 
-            _collection.Recalc(_collection.Width, true);
+            UpdateCellsWidthCache(_collection.Width, true);
             Draw();
         }
 
@@ -468,6 +457,22 @@ namespace DataGridSam
         {
             if (b is DataGrid self)
                 self.Draw();
+        }
+
+        internal void UpdateCellsWidthCache(double width, bool isForce)
+        {
+            if (cachedWidth != width || isForce)
+            {
+                int vlines = Columns.Count - 1;
+                if (vlines < 0)
+                    vlines = 0;
+
+                double freeWidth = width - vlines * BordersThickness;
+                var lengths = Columns.Select(x => x.Width).ToArray();
+
+                CachedWidths = Row.CalculateWidthRules(lengths, freeWidth);
+                cachedWidth = width;
+            }
         }
 
         protected override ILayoutManager CreateLayoutManager()

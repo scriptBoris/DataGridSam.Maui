@@ -11,5 +11,6 @@ public partial class App : Application
 
 		DataCollector.GenerateUsers();
 		MainPage = new NavigationPage(new MainPage());
+		//MainPage = new DataGridSamplePage();
     }
 }
