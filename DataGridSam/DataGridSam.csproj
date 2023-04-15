@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net7.0;net7.0-android;net7.0-maccatalyst;net7.0-ios</TargetFrameworks>
@@ -18,7 +18,7 @@
 		<Nullable>enable</Nullable>
 		<PackageId>DataGridSam.Maui</PackageId>
 		<Title>DataGridSam.Maui</Title>
-		<Version>0.9.6-beta</Version>
+		<Version>0.9.7-beta</Version>
 		<Authors>Boris Krit</Authors>
 		<Product>DataGridSam.Maui</Product>
 		<PackageOutputPath>$(SolutionDir)Nuget\</PackageOutputPath>
