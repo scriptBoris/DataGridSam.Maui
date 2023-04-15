@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataGridSam.Internal
 {
-    internal interface IDataTrigger
+    public interface IDataTrigger
     {
         DataGrid? DataGrid { get; set; }
         int? CellTriggerId { get; set; }

@@ -36,38 +36,7 @@ namespace DataGridSam.Internal
             {
                 try
                 {
-                    var row = new Row(dataGrid);
-
-                    // TODO Сделать обработчик нажатия на сам Row
-                    //Button? button = null;
-                    //if (dataGrid.RowSelectedCommand != null || dataGrid.RowLongSelectedCommand != null)
-                    //{
-                    //    button = new DGButton()
-                    //    {
-                    //        CornerRadius = 0,
-                    //        Padding = 0,
-                    //        Margin = 0,
-                    //        BackgroundColor = Colors.Transparent,
-                    //        Command = dataGrid.RowSelectedCommand,
-                    //        CommandLongClick = dataGrid.RowLongSelectedCommand,
-                    //    };
-                    //    button.SetBinding(Button.CommandParameterProperty, Binding.SelfPath);
-                    //    row.Children.Add(button);
-                    //}
-
-                    //var colDef = new ColumnDefinitionCollection();
-                    //for (int i = 0; i < columns.Count; i++)
-                    //{
-                    //    var column = columns[i];
-                    //    colDef.Add(new ColumnDefinition { Width = column.Width });
-
-                    //    row.InitCell(column);
-                    //}
-
-                    // triggers
-                    row.SetTriggers(triggers);
-
-                    row.UpdateVisual();
+                    var row = new Row(dataGrid, triggers);
                     return row;
                 }
                 catch (Exception ex)

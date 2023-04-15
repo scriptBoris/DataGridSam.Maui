@@ -54,7 +54,7 @@ namespace DataGridSam.Handlers
             if (IsSdk21)
             {
                 RippleEnd();
-                Proxy.OnTapFinish(needTrigger ? Row.ThrowTapMode.Tap : Row.ThrowTapMode.Cancel);
+                Proxy.OnTapFinish(needTrigger ? TapFinishModes.Tap : TapFinishModes.Cancel);
             }
             else
             {

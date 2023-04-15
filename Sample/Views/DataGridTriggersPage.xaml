@@ -7,6 +7,8 @@
              x:DataType="views:DataGridTriggersPage"
              Title="DataGrid triggers">
     <datagrid:DataGrid ItemsSource="{Binding Items}"
+                       RowSelectedCommand="{Binding CommandSelectedRow}"
+                       RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
                        BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
                        BordersThickness="1"
                        HeaderFontSize="16"
