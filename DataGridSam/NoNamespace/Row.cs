@@ -21,7 +21,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 
     private INotifyPropertyChanged? lastContext;
     private bool isPressed;
-    private Color beforeAnimationColor;
+    private Color logicalBackgroundColor;
     private Color externalBackgroundColor = Colors.Transparent;
 
     public Row(DataGrid dataGrid, IList<IDataTrigger> triggers)
@@ -31,7 +31,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         _triggers = triggers;
 
         BackgroundColor = dataGrid.CellBackgroundColor;
-        beforeAnimationColor = BackgroundColor;
+        logicalBackgroundColor = BackgroundColor;
 
         for (int i = 0; i < dataGrid.Columns.Count; i++)
         {
@@ -43,7 +43,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         }
     }
 
-    public Color? LogicalBackgroundColor { get; private set; }
+    public Color? TriggeredBackgroundColor { get; private set; }
     public Color? TextColor { get; set; }
     public double? FontSize { get; set; }
     public FontAttributes? FontAttributes { get; set; }
@@ -126,15 +126,15 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 
     internal void UpdateVisual()
     {
-        LogicalBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+        TriggeredBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
         TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
         FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
         FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
         VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
         HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
 
-        BackgroundColor = LogicalBackgroundColor ?? _dataGrid.CellBackgroundColor;
-        beforeAnimationColor = BackgroundColor;
+        BackgroundColor = TriggeredBackgroundColor ?? _dataGrid.CellBackgroundColor;
+        logicalBackgroundColor = BackgroundColor;
 
         foreach (var cell in _cells)
             cell.UpdateVisual();
@@ -331,15 +331,13 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     /// <param name="fill">Percent setup, from 0 to 1, where 1 is full setup color</param>
     public void SetRowBackgroundColor(Color color, double fill = 1)
     {
-        BackgroundColor = VisualExtensions.MixColor(beforeAnimationColor, color, fill);
+        BackgroundColor = VisualExtensions.MixColor(logicalBackgroundColor, color, fill);
         externalBackgroundColor = color;
 
         for (int i = 0; i < _cells.Length; i++)
         {
             var cell = _cells[i];
-            var bgitem = cell.BeforeAnimationColor ?? Colors.Transparent;
-            cell.Content.BackgroundColor = VisualExtensions.MixColor(bgitem, color, fill);
-            cell.ExternalBackgroundColor = color;
+            cell.Content.BackgroundColor = VisualExtensions.MixColor(cell.LogicalBackgroundColor, color, fill);
         }
     }
 
@@ -349,13 +347,12 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     /// <param name="fill">Percent resore, from 0 to 1, where 1 is full restore</param>
     public void RestoreRowBackgroundColor(double fill = 1)
     {
-        BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, beforeAnimationColor, fill);
+        BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, logicalBackgroundColor, fill);
 
         for (int i = 0; i < _cells.Length; i++)
         {
             var cell = _cells[i];
-            var bgitem = cell.BeforeAnimationColor ?? Colors.Transparent;
-            cell.Content.BackgroundColor = VisualExtensions.MixColor(cell.ExternalBackgroundColor, bgitem, fill);
+            cell.Content.BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, cell.LogicalBackgroundColor, fill);
         }
     }
 }

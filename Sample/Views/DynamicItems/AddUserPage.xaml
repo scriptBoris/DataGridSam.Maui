@@ -19,6 +19,9 @@
                Placeholder="Index"
                Keyboard="Numeric"/>
 
+        <Button Text="{Binding Rank}"
+                Command="{Binding CommandSelectRank}"/>
+
         <Button Text="Create"
                 Command="{Binding CommandCreate}"/>
     </VerticalStackLayout>

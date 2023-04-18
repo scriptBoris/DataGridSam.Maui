@@ -20,8 +20,27 @@ public partial class AddUserPage : ContentPage
 	public Ranks Rank { get; set; } = Ranks.OfficePlankton;
 	public int Index { get; set; } = -1;
 
+	public ICommand CommandSelectRank => new Command(async () =>
+	{
+        const string cancel = "Cancel";
 
-	public ICommand CommandCreate => new Command(() =>
+        string[] items = Enum.GetValues<Ranks>()
+            .Select(x => x.ToString())
+            .ToArray();
+
+        string? res = await DisplayActionSheet(
+            $"Select rank",
+            cancel,
+            null!,
+            items);
+        if (res == null || res == cancel)
+            return;
+
+        var newRank = Enum.Parse<Ranks>(res);
+		Rank = newRank;
+    });
+
+    public ICommand CommandCreate => new Command(() =>
 	{
 		if (string.IsNullOrWhiteSpace(FirstName))
 			return;
@@ -68,4 +87,9 @@ public partial class AddUserPage : ContentPage
 		public required int Index { get; init; }
 		public required User User { get; init; }
 	}
+
+    private void Button_Clicked(object sender, EventArgs e)
+    {
+
+    }
 }

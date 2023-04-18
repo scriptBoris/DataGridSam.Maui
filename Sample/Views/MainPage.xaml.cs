@@ -36,4 +36,9 @@ public partial class MainPage : ContentPage
     {
         Navigation.PushAsync(new DataGridDynamicItemsPage());
     }
+
+    private void Button_Clicked_6(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DataGridCustomCellsPage());
+    }
 }

@@ -22,5 +22,8 @@
 
         <Button Text="Dynamic items"
                 Clicked="Button_Clicked_5"/>
+
+        <Button Text="Custom cells"
+                Clicked="Button_Clicked_6"/>
     </VerticalStackLayout>
 </ContentPage>

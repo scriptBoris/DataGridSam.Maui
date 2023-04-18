@@ -1,4 +1,5 @@
-﻿using DataGridSam.Extensions;
+﻿using DataGridSam.Core;
+using DataGridSam.Extensions;
 using DataGridSam.Handlers;
 using DataGridSam.Internal;
 using Microsoft.Maui.Controls;
@@ -24,45 +25,47 @@ public class Cell : IDataTriggerExecutor
 
         if (column.CellTemplate == null)
         {
-            var label = new Label
+            Content = new LabelCell
             {
-                Padding = SetupPadding(),
+                Padding = ResolvePadding(),
             };
-            Content = label;
-            label.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+            Content.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
         }
         else
         {
-            var custom = (View)column.CellTemplate.CreateContent();
-            custom.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
-            Content = custom;
+            Content = (View)column.CellTemplate.CreateContent();
 
-            switch (custom)
+            if (string.IsNullOrEmpty(column.PropertyName))
+                Content.SetBinding(View.BindingContextProperty, new Binding("BindingContext", source:row));
+            else
+                Content.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+
+            switch (Content)
             {
                 case Button button:
-                    button.Padding = SetupPadding();
+                    button.Padding = ResolvePadding();
                     break;
                 case ImageButton ibutton:
-                    ibutton.Padding = SetupPadding();
+                    ibutton.Padding = ResolvePadding();
                     break;
                 case Label cl:
-                    cl.Padding = SetupPadding();
+                    cl.Padding = ResolvePadding();
                     break;
                 case ContentView cv:
-                    cv.Padding = SetupPadding();
+                    cv.Padding = ResolvePadding();
                     break;
                 case Layout clt:
-                    clt.Padding = SetupPadding();
+                    clt.Padding = ResolvePadding();
                     break;
                 default:
                     break;
             }
         }
+
+        LogicalBackgroundColor = Content.BackgroundColor ?? Colors.Transparent;
     }
 
-    internal Color? BeforeAnimationColor { get; private set; }
-    internal Color ExternalBackgroundColor { get; set; } = Colors.Transparent;
-
+    internal Color LogicalBackgroundColor { get; private set; }
     public View Content { get; private set; }
     public Color? BackgroundColor { get; set; }
     public Color? TextColor { get; set; }
@@ -82,47 +85,44 @@ public class Cell : IDataTriggerExecutor
 
         var bg = ResolveProperty<Color>(
             BackgroundColor,
-            _row.LogicalBackgroundColor,
+            _row.TriggeredBackgroundColor,
             _column.CellBackgroundColor,
-            _column.DataGrid!.CellBackgroundColor);
-
-        if (bg == _row.BackgroundColor)
-            bg = Colors.Transparent;
+            _column.DataGrid!.CellBackgroundColor) ?? Colors.Transparent;
 
         Content.BackgroundColor = bg;
-        BeforeAnimationColor = bg;
+        LogicalBackgroundColor = bg;
 
-        if (Content is Label label)
+        if (Content is ICell cell)
         {
-            label.TextColor = ResolveProperty<Color>(
+            cell.TextColor = ResolveProperty<Color>(
                 TextColor,
                 _row.TextColor,
                 _column.CellTextColor,
                 _column.DataGrid!.CellTextColor
             );
 
-            label.FontSize = ResolveProperty<double>(
+            cell.FontSize = ResolveProperty<double>(
                 FontSize,
                 _row.FontSize,
                 _column.CellFontSize,
                 _column.DataGrid!.CellFontSize
             );
 
-            label.FontAttributes = ResolveProperty<FontAttributes>(
+            cell.FontAttributes = ResolveProperty<FontAttributes>(
                 FontAttributes,
                 _row.FontAttributes,
                 _column.CellFontAttributes,
                 _column.DataGrid!.CellFontAttributes
             );
 
-            label.VerticalTextAlignment = ResolveProperty<TextAlignment>(
+            cell.VerticalTextAlignment = ResolveProperty<TextAlignment>(
                 VerticalTextAlignment,
                 _row.VerticalTextAlignment,
                 _column.CellVerticalTextAlignment,
                 _column.DataGrid!.CellVerticalTextAlignment
             );
 
-            label.HorizontalTextAlignment = ResolveProperty<TextAlignment>(
+            cell.HorizontalTextAlignment = ResolveProperty<TextAlignment>(
                 HorizontalTextAlignment,
                 _row.HorizontalTextAlignment,
                 _column.CellHorizontalTextAlignment,
@@ -131,19 +131,8 @@ public class Cell : IDataTriggerExecutor
         }
     }
 
-    public T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue)
-    {
-        if (cellValue is T cellT)
-            return cellT;
-        else if (rowValue is T rowT)
-            return rowT;
-        else if (columnValue is T columnT)
-            return columnT;
-        else
-            return (T)dataGridValue;
-    }
-
-    private Thickness SetupPadding()
+    // todo что за порнография? Нужно сделать Nullable Thickness для паддингов, а для этого сделать конвентер из XAML в объект
+    private Thickness ResolvePadding()
     {
         if (!_column.IsCellPaddingNull)
             return _column.CellPadding;
@@ -167,5 +156,17 @@ public class Cell : IDataTriggerExecutor
         }
 
         return hasChanges;
+    }
+
+    public static T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue)
+    {
+        if (cellValue is T cellT)
+            return cellT;
+        else if (rowValue is T rowT)
+            return rowT;
+        else if (columnValue is T columnT)
+            return columnT;
+        else
+            return (T)dataGridValue;
     }
 }

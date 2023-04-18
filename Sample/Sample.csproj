@@ -93,6 +93,9 @@
 	  <MauiXaml Update="Views\DataGridColorizedColumnsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\DataGridCustomCellsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\DataGridDynamicItems.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

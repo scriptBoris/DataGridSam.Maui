@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:datagrid="clr-namespace:DataGridSam;assembly=DataGridSam"
+             xmlns:local="clr-namespace:Sample.Views"
+             xmlns:models="clr-namespace:Sample.Models"
+             xmlns:controls="clr-namespace:Sample.Controls"
+             x:Class="Sample.Views.DataGridCustomCellsPage"
+             x:DataType="local:DataGridCustomCellsPage"
+             Title="Custom сells">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Add"
+                     Command="{Binding CommandAddItem}"/>
+    </ContentPage.ToolbarItems>
+
+    <datagrid:DataGrid ItemsSource="{Binding Items}"
+                       RowSelectedCommand="{Binding CommandSelectedRow}"
+                       RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
+                       BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                       BordersThickness="1"
+                       HeaderFontSize="16"
+                       HeaderHorizontalAlignment="Center"
+                       HeaderTextColor="{AppThemeBinding Light=#333, Dark=#CCC}"
+                       HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                       CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                       CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                       CellPadding="5"
+                       x:Name="dataGrid">
+        
+        <!--name--> 
+        <datagrid:DataGridColumn Title="Name">
+            <datagrid:DataGridColumn.CellTemplate>
+                <DataTemplate x:DataType="models:User">
+                    <controls:CellContainer>
+                        <Label Text="{Binding FirstName}"/>
+                        <Label Text="{Binding LastName}"/>
+                    </controls:CellContainer>
+                </DataTemplate>
+            </datagrid:DataGridColumn.CellTemplate>
+        </datagrid:DataGridColumn>
+
+        <!--birth date-->
+        <datagrid:DataGridColumn Title="Birth date"
+                                 Width="100"
+                                 PropertyName="BirthDate"
+                                 StringFormat="{}{0:dd.MM.yyyy}"
+                                 CellHorizontalTextAlignment="End">
+            <datagrid:DataGridColumn.CellPadding>
+                <OnPlatform x:TypeArguments="Thickness">
+                    <On Platform="WinUI" Value="5, 5, 15, 5"/>
+                </OnPlatform>
+            </datagrid:DataGridColumn.CellPadding>
+
+            <datagrid:DataGridColumn.CellTriggers>
+                <datagrid:CellTrigger Binding="{Binding IsOldFag}"
+                                      Value="True"
+                                      TextColor="Yellow"
+                                      FontAttributes="Bold"/>
+            </datagrid:DataGridColumn.CellTriggers>
+        </datagrid:DataGridColumn>
+
+        <!--row triggers-->
+        <datagrid:DataGrid.RowTriggers>
+            <datagrid:RowTrigger Binding="{Binding IsAdmin}"
+                                 Value="True"
+                                 BackgroundColor="#833"
+                                 TextColor="White"/>
+
+            <datagrid:RowTrigger Binding="{Binding IsManager}"
+                                 Value="True"
+                                 BackgroundColor="#225"
+                                 TextColor="White"/>
+        </datagrid:DataGrid.RowTriggers>
+    </datagrid:DataGrid>
+</ContentPage>
