@@ -36,7 +36,7 @@
             </datagrid:DataGridColumn.CellPadding>
             
             <datagrid:DataGridColumn.CellTriggers>
-                <datagrid:CellTrigger Binding="{Binding IsOldFag}"
+                <datagrid:CellTrigger PropertyName="IsOldFag"
                                       Value="True"
                                       TextColor="Yellow"
                                       FontAttributes="Bold"/>
@@ -45,13 +45,13 @@
 
         <!--row triggers-->
         <datagrid:DataGrid.RowTriggers>
-            <datagrid:RowTrigger Binding="{Binding IsAdmin}"
+            <datagrid:RowTrigger PropertyName="IsAdmin"
                                  Value="True"
                                  BackgroundColor="#833"
                                  TextColor="White"
                                  FontSize="18"/>
 
-            <datagrid:RowTrigger Binding="{Binding IsManager}"
+            <datagrid:RowTrigger PropertyName="IsManager"
                                  Value="True"
                                  BackgroundColor="#225"
                                  TextColor="White"/>

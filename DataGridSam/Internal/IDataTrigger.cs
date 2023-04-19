@@ -10,7 +10,7 @@ namespace DataGridSam.Internal
     {
         DataGrid? DataGrid { get; set; }
         int? CellTriggerId { get; set; }
-        BindingBase Binding { get; }
+        string? PropertyName { get; }
         object? Value { get; }
         object? CSharpValue { get; set; }
 

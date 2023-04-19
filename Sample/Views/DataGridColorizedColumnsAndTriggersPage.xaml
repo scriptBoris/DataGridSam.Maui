@@ -39,7 +39,7 @@
             </sam:DataGridColumn.CellPadding>
 
             <sam:DataGridColumn.CellTriggers>
-                <sam:CellTrigger Binding="{Binding IsOldFag}"
+                <sam:CellTrigger PropertyName="IsOldFag"
                                  Value="True"
                                  TextColor="Yellow"
                                  FontAttributes="Bold"/>
@@ -47,13 +47,13 @@
         </sam:DataGridColumn>
 
         <sam:DataGrid.RowTriggers>
-            <sam:RowTrigger Binding="{Binding IsAdmin}"
+            <sam:RowTrigger PropertyName="IsAdmin"
                             Value="True"
                             BackgroundColor="#833"
                             TextColor="White"
                             FontSize="18"/>
 
-            <sam:RowTrigger Binding="{Binding IsManager}"
+            <sam:RowTrigger PropertyName="IsManager"
                             Value="True"
                             BackgroundColor="#225"
                             TextColor="White"/>

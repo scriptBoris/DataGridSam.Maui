@@ -9,8 +9,11 @@ namespace DataGridSam.Extensions
 {
     internal static class ObjectExt
     {
-        internal static object? GetValueFromProperty(this object target, string propertyPath)
+        internal static object? GetValueFromProperty(this object target, string? propertyPath)
         {
+            if (string.IsNullOrEmpty(propertyPath))
+                return null;
+
             if (target is INotifyPropertyChangedFast propertyExchange)
                 return propertyExchange.GetPropertyValue(propertyPath);
             else

@@ -39,10 +39,11 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             var cell = new Cell(col, this);
             
             _cells[i] = cell;
-            Children.Add(cell.Content);
+            Children.Add(cell.View);
         }
     }
 
+    public new Color BackgroundColor { get; private set; }
     public Color? TriggeredBackgroundColor { get; private set; }
     public Color? TextColor { get; set; }
     public double? FontSize { get; set; }
@@ -71,7 +72,6 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             lastContext = null;
         }
 
-        _enabledTriggers.Clear();
         UpdateTriggers();
         UpdateVisual();
     }
@@ -84,13 +84,10 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         bool hasChanges = false;
         foreach (var trigger in _triggers)
         {
-            if (trigger.Binding is not Binding binding)
-                throw new NotSupportedException();
-
-            if (e.PropertyName != binding.Path)
+            if (e.PropertyName != trigger.PropertyName)
                 continue;
 
-            if (UpdateTrigger(trigger, binding))
+            if (UpdateTrigger(trigger))
                 hasChanges = true;
         }
 
@@ -104,17 +101,12 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             return;
 
         foreach (var trigger in _triggers)
-        {
-            if (trigger.Binding is not Binding binding)
-                throw new NotSupportedException();
-
-            UpdateTrigger(trigger, binding);
-        }
+            UpdateTrigger(trigger);
     }
 
-    private bool UpdateTrigger(IDataTrigger trigger, Binding binding)
+    private bool UpdateTrigger(IDataTrigger trigger)
     {
-        object? value = BindingContext.GetValueFromProperty(binding.Path);
+        object? value = BindingContext.GetValueFromProperty(trigger.PropertyName);
         IDataTriggerExecutor executor;
         if (trigger.CellTriggerId != null)
             executor = _cells[trigger.CellTriggerId.Value];
@@ -173,7 +165,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             double h = bounds.Size.Height;
 
             var rect = new Rect(x, 0, w, h);
-            ((IView)cell.Content).Arrange(rect);
+            ((IView)cell.View).Arrange(rect);
 
             x += w + _dataGrid.BordersThickness;
         }
@@ -196,7 +188,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             var cell = _cells[i];
             double w = Widths[i];
 
-            var m = ((IView)cell.Content).Measure(w, heightConstraint);
+            var m = ((IView)cell.View).Measure(w, heightConstraint);
 
             if (m.Height > h)
                 h = m.Height;
@@ -337,7 +329,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         for (int i = 0; i < _cells.Length; i++)
         {
             var cell = _cells[i];
-            cell.Content.BackgroundColor = VisualExtensions.MixColor(cell.LogicalBackgroundColor, color, fill);
+            cell.View.BackgroundColor = VisualExtensions.MixColor(cell.LogicalBackgroundColor, color, fill);
         }
     }
 
@@ -352,7 +344,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         for (int i = 0; i < _cells.Length; i++)
         {
             var cell = _cells[i];
-            cell.Content.BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, cell.LogicalBackgroundColor, fill);
+            cell.View.BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, cell.LogicalBackgroundColor, fill);
         }
     }
 }

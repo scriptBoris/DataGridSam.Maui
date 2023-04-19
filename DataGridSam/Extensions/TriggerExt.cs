@@ -67,8 +67,11 @@ namespace DataGridSam.Extensions
             return null;
         }
 
-        internal static T? FirstNonNull<T>(this IEnumerable<IDataTrigger> triggers, Func<IDataTrigger, T?> select)
+        internal static T? FirstNonNull<T>(this IList<IDataTrigger> triggers, Func<IDataTrigger, T?> select)
         {
+            if (triggers.Count == 0)
+                return default;
+
             foreach (var item in triggers)
             {
                 var res = select(item);

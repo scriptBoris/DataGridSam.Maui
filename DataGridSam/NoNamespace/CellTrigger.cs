@@ -10,7 +10,7 @@ namespace DataGridSam
     public class CellTrigger : BindableObject, IDataTrigger
     {
         DataGrid? IDataTrigger.DataGrid { get; set; }
-        public required BindingBase Binding { get; set; }
+        public string? PropertyName { get; set; }
         public object? Value { get; set; }
 
         public int? CellTriggerId { get; set; }

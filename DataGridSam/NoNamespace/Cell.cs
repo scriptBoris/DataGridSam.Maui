@@ -25,22 +25,17 @@ public class Cell : IDataTriggerExecutor
 
         if (column.CellTemplate == null)
         {
-            Content = new LabelCell
+            View = new LabelCell
             {
                 Padding = ResolvePadding(),
             };
-            Content.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+            View.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
         }
         else
         {
-            Content = (View)column.CellTemplate.CreateContent();
+            View = (View)column.CellTemplate.CreateContent();
 
-            if (string.IsNullOrEmpty(column.PropertyName))
-                Content.SetBinding(View.BindingContextProperty, new Binding("BindingContext", source:row));
-            else
-                Content.SetBinding(View.BindingContextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
-
-            switch (Content)
+            switch (View)
             {
                 case Button button:
                     button.Padding = ResolvePadding();
@@ -61,22 +56,21 @@ public class Cell : IDataTriggerExecutor
                     break;
             }
         }
-
-        LogicalBackgroundColor = Content.BackgroundColor ?? Colors.Transparent;
     }
 
-    internal Color LogicalBackgroundColor { get; private set; }
-    public View Content { get; private set; }
-    public Color? BackgroundColor { get; set; }
-    public Color? TextColor { get; set; }
-    public double? FontSize { get; set; }
-    public FontAttributes? FontAttributes { get; set; }
-    public TextAlignment? VerticalTextAlignment { get; set; }
-    public TextAlignment? HorizontalTextAlignment { get; set; }
+    internal Color LogicalBackgroundColor { get; private set; } = Colors.Transparent;
+    internal View View { get; private set; }
+    internal Color? BackgroundColor { get; private set; }
+    internal Color? TriggeredBackgroundColor { get; private set; }
+    internal Color? TextColor { get; private set; }
+    internal double? FontSize { get; private set; }
+    internal FontAttributes? FontAttributes { get; private set; }
+    internal TextAlignment? VerticalTextAlignment { get; private set; }
+    internal TextAlignment? HorizontalTextAlignment { get; private set; }
 
-    public void UpdateVisual()
+    internal void UpdateVisual()
     {
-        BackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+        TriggeredBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
         TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
         FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
         FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
@@ -84,15 +78,15 @@ public class Cell : IDataTriggerExecutor
         HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
 
         var bg = ResolveProperty<Color>(
-            BackgroundColor,
+            TriggeredBackgroundColor,
             _row.TriggeredBackgroundColor,
             _column.CellBackgroundColor,
-            _column.DataGrid!.CellBackgroundColor) ?? Colors.Transparent;
+            Colors.Transparent);
 
-        Content.BackgroundColor = bg;
         LogicalBackgroundColor = bg;
+        BackgroundColor = bg;
 
-        if (Content is ICell cell)
+        if (View is ICell cell)
         {
             cell.TextColor = ResolveProperty<Color>(
                 TextColor,
@@ -131,13 +125,18 @@ public class Cell : IDataTriggerExecutor
         }
     }
 
-    // todo что за порнография? Нужно сделать Nullable Thickness для паддингов, а для этого сделать конвентер из XAML в объект
+    // todo Нужно сделать Nullable Thickness для паддингов, а для этого сделать конвентер из XAML в объект
     private Thickness ResolvePadding()
     {
         if (!_column.IsCellPaddingNull)
             return _column.CellPadding;
 
         return _column.DataGrid!.CellPadding;
+    }
+
+    internal void ClearEnabledTriggers()
+    {
+        _enabledTriggers.Clear();
     }
 
     public bool ExecuteTrigger(IDataTrigger trigger, object? value)
@@ -158,7 +157,7 @@ public class Cell : IDataTriggerExecutor
         return hasChanges;
     }
 
-    public static T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue)
+    public static T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue) where T : notnull
     {
         if (cellValue is T cellT)
             return cellT;

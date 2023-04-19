@@ -20,6 +20,7 @@ namespace Sample.Controls
             get => _textColor; 
             set
             {
+                _textColor = value;
                 foreach (var item in Children)
                 {
                     if (item is Label label)
