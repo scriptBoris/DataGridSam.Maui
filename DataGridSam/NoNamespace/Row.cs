@@ -1,5 +1,6 @@
 ﻿using DataGridSam.Extensions;
 using DataGridSam.Internal;
+using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Layouts;
 using System;
@@ -17,12 +18,13 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     private readonly DataGrid _dataGrid;
     private readonly Cell[] _cells;
     private readonly List<IDataTrigger> _enabledTriggers = new();
-    private IList<IDataTrigger> _triggers;
+    private readonly IList<IDataTrigger> _triggers;
+    private readonly RowBackgroundView _backgroundView = new();
 
     private INotifyPropertyChanged? lastContext;
     private bool isPressed;
-    private Color logicalBackgroundColor;
     private Color externalBackgroundColor = Colors.Transparent;
+    private float externalBackgroundColorFill = 0;
 
     public Row(DataGrid dataGrid, IList<IDataTrigger> triggers)
     {
@@ -31,7 +33,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         _triggers = triggers;
 
         BackgroundColor = dataGrid.CellBackgroundColor;
-        logicalBackgroundColor = BackgroundColor;
+        Children.Add(_backgroundView);
 
         for (int i = 0; i < dataGrid.Columns.Count; i++)
         {
@@ -53,6 +55,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     public Color TapColor => _dataGrid.TapSelectedColor;
 
     private double[] Widths => _dataGrid.CachedWidths;
+    private float[] WidthsSkia => _dataGrid.CachedWidthsForSkia;
     private IDispatcherTimer? Timer { get; set; }
 
     protected override void OnBindingContextChanged()
@@ -116,22 +119,6 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         return executor.ExecuteTrigger(trigger, value);
     }
 
-    internal void UpdateVisual()
-    {
-        TriggeredBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
-        TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
-        FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
-        FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
-        VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
-        HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
-
-        BackgroundColor = TriggeredBackgroundColor ?? _dataGrid.CellBackgroundColor;
-        logicalBackgroundColor = BackgroundColor;
-
-        foreach (var cell in _cells)
-            cell.UpdateVisual();
-    }
-
     public bool ExecuteTrigger(IDataTrigger trigger, object? value)
     {
         bool isEnabled = trigger.IsEqualValue(value);
@@ -150,6 +137,33 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         return hasChanges;
     }
 
+    internal void UpdateVisual()
+    {
+        TriggeredBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
+        TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
+        FontSize = _enabledTriggers.FirstNonNull(x => x.FontSize);
+        FontAttributes = _enabledTriggers.FirstNonNull(x => x.FontAttributes);
+        VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
+        HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
+        BackgroundColor = TriggeredBackgroundColor ?? _dataGrid.CellBackgroundColor;
+
+        foreach (var cell in _cells)
+            cell.UpdateVisual();
+
+        Redraw();
+    }
+
+    internal void Redraw()
+    {
+        var colors = new Color?[_cells.Length];
+        for (int i = 0; i < _cells.Length; i++)
+            colors[i] = _cells[i].BackgroundColor?.MultiplyAlpha(1 - externalBackgroundColorFill);
+
+        float spacing = (float)_dataGrid.BordersThickness;
+        var mainColor = BackgroundColor.MixColor(externalBackgroundColor, externalBackgroundColorFill);
+        _backgroundView.Redraw(spacing, WidthsSkia, mainColor, colors);
+    }
+
     protected override ILayoutManager CreateLayoutManager()
     {
         return this;
@@ -158,6 +172,10 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     public Size ArrangeChildren(Rect bounds)
     {
         double x = 0;
+
+        ((IView)_backgroundView).Arrange(bounds);
+        Redraw();
+
         for (int i = 0; i < _cells.Length; i++)
         {
             var cell = _cells[i];
@@ -181,6 +199,8 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         if (Widths.Length == 0)
             _dataGrid.UpdateCellsWidthCache(widthConstraint, false);
 #endif
+
+        ((IView)_backgroundView).Measure(widthConstraint, heightConstraint);
 
         double h = 0;
         for (int i = 0; i < _cells.Length; i++)
@@ -321,31 +341,21 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     /// </summary>
     /// <param name="color">New color</param>
     /// <param name="fill">Percent setup, from 0 to 1, where 1 is full setup color</param>
-    public void SetRowBackgroundColor(Color color, double fill = 1)
+    public void SetRowBackgroundColor(Color color, float fill = 1)
     {
-        BackgroundColor = VisualExtensions.MixColor(logicalBackgroundColor, color, fill);
         externalBackgroundColor = color;
-
-        for (int i = 0; i < _cells.Length; i++)
-        {
-            var cell = _cells[i];
-            cell.View.BackgroundColor = VisualExtensions.MixColor(cell.LogicalBackgroundColor, color, fill);
-        }
+        externalBackgroundColorFill = fill;
+        Redraw();
     }
 
     /// <summary>
     /// Restores the visual part of a string to the original DataGrid state
     /// </summary>
     /// <param name="fill">Percent resore, from 0 to 1, where 1 is full restore</param>
-    public void RestoreRowBackgroundColor(double fill = 1)
+    public void RestoreRowBackgroundColor(float fill = 1)
     {
-        BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, logicalBackgroundColor, fill);
-
-        for (int i = 0; i < _cells.Length; i++)
-        {
-            var cell = _cells[i];
-            cell.View.BackgroundColor = VisualExtensions.MixColor(externalBackgroundColor, cell.LogicalBackgroundColor, fill);
-        }
+        externalBackgroundColorFill = 1 - fill;
+        Redraw();
     }
 }
 
@@ -365,9 +375,9 @@ public static class VisualExtensions
         easing ??= Easing.Linear;
         var taskCompletionSource = new TaskCompletionSource<bool>();
 
-        var anim = new Animation((x) =>
+        var anim = new Microsoft.Maui.Controls.Animation((x) =>
         {
-            self.RestoreRowBackgroundColor(x);
+            self.RestoreRowBackgroundColor((float)x);
         }, 0, 1, easing);
 
         anim.Commit(self, AnimationName, length: length, easing: easing, finished: (v, b) =>
@@ -382,9 +392,9 @@ public static class VisualExtensions
         easing ??= Easing.Linear;
         var taskCompletionSource = new TaskCompletionSource<bool>();
 
-        var anim = new Animation((x) =>
+        var anim = new Microsoft.Maui.Controls.Animation((x) =>
         {
-            self.SetRowBackgroundColor(toColor, x);
+            self.SetRowBackgroundColor(toColor, (float)x);
         }, 0, 1, easing);
 
         anim.Commit(self, AnimationName, length: length, easing: easing, finished: (v, b) =>
@@ -399,7 +409,7 @@ public static class VisualExtensions
         self.AbortAnimation(AnimationName);
     }
 
-    public static Color MixColor(Color fromColor, Color toColor, double t)
+    public static Color MixColor(this Color fromColor, Color toColor, double t)
     {
         return Microsoft.Maui.Graphics.Color.FromRgba(
                 fromColor.Red + t * (toColor.Red - fromColor.Red),
@@ -407,4 +417,14 @@ public static class VisualExtensions
                 fromColor.Blue + t * (toColor.Blue - fromColor.Blue),
                 fromColor.Alpha + t * (toColor.Alpha - fromColor.Alpha));
     }
+
+    //public static Color MixColor(this Color fromColor, Color toColor, float progress)
+    //{
+    //    float r = fromColor.Red + (toColor.Red - fromColor.Red) * progress;
+    //    float g = fromColor.Green + (toColor.Green - fromColor.Green) * progress;
+    //    float b = fromColor.Blue + (toColor.Blue - fromColor.Blue) * progress;
+    //    float a = fromColor.Alpha + (toColor.Alpha - fromColor.Alpha) * progress;
+
+    //    return new Color(r, g, b, a);
+    //}
 }

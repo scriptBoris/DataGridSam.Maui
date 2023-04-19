@@ -415,6 +415,7 @@ namespace DataGridSam
 #endregion bindable props
 
         internal double[] CachedWidths { get; set; } = Array.Empty<double>();
+        internal float[] CachedWidthsForSkia { get; set; } = Array.Empty<float>();
         internal IDispatcherTimer? Timer { get; set; }
 
         protected override void OnParentSet()
@@ -471,6 +472,9 @@ namespace DataGridSam
                 var lengths = Columns.Select(x => x.Width).ToArray();
 
                 CachedWidths = Row.CalculateWidthRules(lengths, freeWidth);
+                CachedWidthsForSkia = Row.CalculateWidthRules(lengths, freeWidth)
+                    .Select(x => (float)(x * DeviceDisplay.Current.MainDisplayInfo.Density))
+                    .ToArray();
                 cachedWidth = width;
             }
         }

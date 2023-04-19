@@ -58,7 +58,6 @@ public class Cell : IDataTriggerExecutor
         }
     }
 
-    internal Color LogicalBackgroundColor { get; private set; } = Colors.Transparent;
     internal View View { get; private set; }
     internal Color? BackgroundColor { get; private set; }
     internal Color? TriggeredBackgroundColor { get; private set; }
@@ -77,14 +76,10 @@ public class Cell : IDataTriggerExecutor
         VerticalTextAlignment = _enabledTriggers.FirstNonNull(x => x.VerticalTextAlignment);
         HorizontalTextAlignment = _enabledTriggers.FirstNonNull(x => x.HorizontalTextAlignment);
 
-        var bg = ResolveProperty<Color>(
+        BackgroundColor = ResolvePropertyBg(
             TriggeredBackgroundColor,
             _row.TriggeredBackgroundColor,
-            _column.CellBackgroundColor,
-            Colors.Transparent);
-
-        LogicalBackgroundColor = bg;
-        BackgroundColor = bg;
+            _column.CellBackgroundColor);
 
         if (View is ICell cell)
         {
@@ -155,6 +150,16 @@ public class Cell : IDataTriggerExecutor
         }
 
         return hasChanges;
+    }
+
+    public static Color? ResolvePropertyBg(Color? v1, Color? v2, Color? v3)
+    {
+        if (v1 != null)
+            return v1;
+        else if (v2 != null)
+            return v2;
+        else 
+            return v3;
     }
 
     public static T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue) where T : notnull

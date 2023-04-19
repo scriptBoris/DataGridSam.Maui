@@ -28,10 +28,6 @@
                        CellPadding="5"
                        x:Name="dataGrid">
         
-        <!--rank-->
-        <datagrid:DataGridColumn Title="Rank"
-                                 PropertyName="Rank"/>
-        
         <!--name--> 
         <datagrid:DataGridColumn Title="Name">
             <datagrid:DataGridColumn.CellTemplate>
@@ -43,6 +39,10 @@
                 </DataTemplate>
             </datagrid:DataGridColumn.CellTemplate>
         </datagrid:DataGridColumn>
+        
+        <!--rank-->
+        <datagrid:DataGridColumn Title="Rank"
+                                 PropertyName="Rank"/>
 
         <!--birth date-->
         <datagrid:DataGridColumn Title="Birth date"

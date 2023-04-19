@@ -1,5 +1,6 @@
 ﻿using DataGridSam.Handlers;
 using DataGridSam.Internal;
+using SkiaSharp.Views.Maui.Handlers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +20,7 @@ namespace DataGridSam
             {
                 hand.AddHandler(typeof(DGCollection), typeof(DGCollectionHandler));
                 hand.AddHandler(typeof(Row), typeof(RowHandler));
+                hand.AddHandler(typeof(RowBackgroundView), typeof(SKCanvasViewHandler));
             });
             return builder;
         }
