@@ -55,6 +55,8 @@ namespace DataGridSam.Internal
 
         internal void Redraw(float spacing, float[] widths, Color mainColor, Color?[] cellColors)
         {
+            spacing = (float)(spacing * DeviceDisplay.Current.MainDisplayInfo.Density);
+            Console.WriteLine($"skiaBG spacing :: {spacing}");
             this.spacing = spacing;
             this.widths = widths;
             this.mainColor = mainColor;

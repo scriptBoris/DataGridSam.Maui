@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Layouts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,48 +8,35 @@ using System.Threading.Tasks;
 
 namespace DataGridSam.Internal
 {
-    internal class Header : Grid
+    internal class Header : Layout, ILayoutManager
     {
-        private readonly List<Label> _views = new();
+        private readonly DataGrid _dataGrid;
+        private readonly List<Label> _labels = new();
         private readonly BoxView _underline;
-        private Color _borderColor;
-        private double _headerFontSize;
-        private Color _headerTextColor;
-        private Color _headerBackgroundColor;
-        private TextAlignment _headerHorizontalAlignment;
-        private TextAlignment _headerVerticalAlignment;
 
-        public Header()
+        private double _headerFontSize = (double)DataGrid.HeaderFontSizeProperty.DefaultValue;
+        private Color _borderColor = (Color)DataGrid.BordersColorProperty.DefaultValue;
+        private double _borderWidth = (double)DataGrid.BordersThicknessProperty.DefaultValue;
+        private Color _headerTextColor = (Color)DataGrid.HeaderTextColorProperty.DefaultValue;
+        private Color _headerBackgroundColor = (Color)DataGrid.HeaderBackgroundColorProperty.DefaultValue;
+        private TextAlignment _headerHorizontalAlignment = (TextAlignment)DataGrid.HeaderHorizontalAlignmentProperty.DefaultValue;
+        private TextAlignment _headerVerticalAlignment = (TextAlignment)DataGrid.HeaderVerticalAlignmentProperty.DefaultValue;
+
+        public Header(DataGrid dataGrid)
         {
-            RowDefinitions = new()
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto },
-            };
-            RowSpacing = 0;
-            ColumnSpacing = 0;
-
-            _underline = new BoxView
-            {
-                VerticalOptions = LayoutOptions.Start,
-                HeightRequest = 1,
-            };
-
-            HeaderFontSize = (double)DataGrid.HeaderFontSizeProperty.DefaultValue;
-            BorderColor = (Color)DataGrid.BordersColorProperty.DefaultValue;
-            HeaderTextColor = (Color)DataGrid.HeaderTextColorProperty.DefaultValue;
-            HeaderBackgroundColor = (Color)DataGrid.HeaderBackgroundColorProperty.DefaultValue;
-            HeaderHorizontalAlignment = (TextAlignment)DataGrid.HeaderHorizontalAlignmentProperty.DefaultValue;
-            HeaderVerticalAlignment = (TextAlignment)DataGrid.HeaderVerticalAlignmentProperty.DefaultValue;
+            _dataGrid = dataGrid;
+            _underline = new BoxView();
+            Children.Add(_underline);
         }
 
+        #region props
         internal TextAlignment HeaderHorizontalAlignment
         {
             get => _headerHorizontalAlignment;
             set
             {
                 _headerHorizontalAlignment = value;
-                foreach (var item in _views)
+                foreach (var item in _labels)
                     item.HorizontalTextAlignment = value;
             }
         }
@@ -58,7 +47,7 @@ namespace DataGridSam.Internal
             set
             {
                 _headerVerticalAlignment = value;
-                foreach (var item in _views)
+                foreach (var item in _labels)
                     item.VerticalTextAlignment = value;
             }
         }
@@ -69,7 +58,7 @@ namespace DataGridSam.Internal
             set
             {
                 _headerBackgroundColor = value;
-                foreach (var item in _views)
+                foreach (var item in _labels)
                     item.BackgroundColor = value;
             }
         }
@@ -80,7 +69,7 @@ namespace DataGridSam.Internal
             set
             {
                 _headerTextColor = value;
-                foreach (var item in _views)
+                foreach (var item in _labels)
                     item.TextColor = value;
             }
         }
@@ -91,7 +80,7 @@ namespace DataGridSam.Internal
             set
             {
                 _headerFontSize = value;
-                foreach (var item in _views)
+                foreach (var item in _labels)
                     item.FontSize = value;
             }
         }
@@ -106,41 +95,110 @@ namespace DataGridSam.Internal
             }
         }
 
-        internal void BorderWidth(double width)
+        internal double BorderWidth
         {
-            _underline.HeightRequest = width;
+            get => _borderWidth;
+            set
+            {
+                _borderWidth = value;
+                _underline.HeightRequest = value;
+                InvalidateMeasure();
+            }
+        }
+        #endregion props
+
+        private double[] Widths => _dataGrid.CachedWidths;
+
+        protected override ILayoutManager CreateLayoutManager()
+        {
+            return this;
         }
 
-        internal void Draw(IList<DataGridColumn> columns, Color borderColor, double borderWidth)
+        public Size ArrangeChildren(Rect bounds)
         {
-            _views.Clear();
-            Clear();
+            double x = 0;
+            double sp = _underline.DesiredSize.Height;
+            double cellsHeight = bounds.Size.Height - sp;
 
-            if (columns.Count == 0)
+            for (int i = 0; i < _labels.Count; i++)
             {
-                return;
+                var cell = _labels[i];
+                double w = Widths[i];
+
+                var rect = new Rect(x, 0, w, cellsHeight);
+                ((IView)cell).Arrange(rect);
+
+                x += w + _dataGrid.BordersThickness;
             }
 
-            var cDefs = new ColumnDefinitionCollection();
+            ((IView)_underline).Arrange(
+                new Rect(
+                    0,                       //x
+                    bounds.Size.Height - sp, //y
+                    bounds.Size.Width,       //w
+                    sp                       //h
+                )
+            );
+
+            return bounds.Size;
+        }
+
+        public Size Measure(double widthConstraint, double heightConstraint)
+        {
+            double h = 0;
+            for (int i = 0; i < _labels.Count; i++)
+            {
+                var cell = _labels[i];
+                double w = Widths[i];
+
+                var m = ((IView)cell).Measure(w, heightConstraint);
+                if (m.Height > h)
+                    h = m.Height;
+            }
+
+            h += ((IView)_underline).Measure(widthConstraint, _dataGrid.BordersThickness).Height;
+
+            return new Size(widthConstraint, h);
+        }
+
+        internal void Redraw(IList<DataGridColumn> columns)
+        {
+            _labels.Clear();
+            Children.Clear();
+
+            if (columns.Count == 0)
+                return;
 
             for (int i = 0; i < columns.Count; i++)
             {
-                var col = columns[i];
-                var colDef = new ColumnDefinition { Width = col.Width };
-                cDefs.Add(colDef);
-
-                CreateTitle(col, i);
+                var title = CreateTitle(columns[i]);
+                Children.Add(title);
+                _labels.Insert(i, (Label)title);
             }
-            ColumnDefinitions = cDefs;
 
-            _underline.Color = borderColor;
-            _underline.HeightRequest = borderWidth;
-            this.SetRow(_underline, 1);
-            this.SetColumnSpan(_underline, ColumnDefinitions.Count);
-            this.Add(_underline);
+            Children.Add(_underline);
+            _underline.Color = _dataGrid.BordersColor;
+            _underline.HeightRequest = _dataGrid.BordersThickness;
+            InvalidateMeasure();
         }
 
-        private void CreateTitle(DataGridColumn col, int index)
+        internal void DrawByInsert(DataGridColumn col)
+        {
+            var view = CreateTitle(col);
+            Children.Add(view);
+            _labels.Insert(col.Index, (Label)view);
+            InvalidateMeasure();
+        }
+
+        internal void DrawByRemove(int index)
+        {
+            var view = _labels[index];
+            _labels.RemoveAt(index);
+            Children.Remove(view);
+            InvalidateMeasure();
+        }
+
+        private View CreateTitle(DataGridColumn col)
         {
             var label = new Label();
             label.SetBinding(Label.TextProperty, new Binding(nameof(DataGridColumn.Title), source: col));
@@ -149,25 +207,17 @@ namespace DataGridSam.Internal
             label.BackgroundColor = HeaderBackgroundColor;
             label.VerticalTextAlignment = HeaderVerticalAlignment;
             label.HorizontalTextAlignment = HeaderHorizontalAlignment;
-
-            this.SetColumn(label, index);
-            Children.Add(label);
-
-            _views.Insert(index, label);
-
-            for (int i = index + 1; i < _views.Count; i++)
-            {
-                var view = _views[i];
-                this.SetColumn(view, i);
-            }
+            return label;
         }
 
-        private void RemoveTitle(int index)
+        internal void ThrowInvalidateArrange()
         {
-            var v = _views[index];
-            _views.RemoveAt(index);
-            ColumnDefinitions.RemoveAt(index);
-            Remove(v);
+            ((IView)this).InvalidateArrange();
+        }
+
+        internal void ThrowInvalidateMeasure()
+        {
+            InvalidateMeasure();
         }
     }
 }

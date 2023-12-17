@@ -4,26 +4,34 @@
              x:Class="Sample.Views.MainPage"
              Title="MainPage"
              Padding="10">
-    <VerticalStackLayout Spacing="10">
-        <Button Text="Sample"
-                Clicked="Button_Clicked"/>
+    <ScrollView>
+        <VerticalStackLayout Spacing="10">
+            <Button Clicked="Button_Clicked"
+                    Text="Sample" />
 
-        <Button Text="Default MAUI Collection (for compare)"
-                Clicked="Button_Clicked_1"/>
+            <Button Clicked="Button_Clicked_1"
+                    Text="Default MAUI Collection (for compare)" />
 
-        <Button Text="Triggers"
-                Clicked="Button_Clicked_2"/>
+            <Button Clicked="Button_Clicked_2"
+                    Text="Triggers" />
 
-        <Button Text="Colorized columns"
-                Clicked="Button_Clicked_3"/>
+            <Button Clicked="Button_Clicked_3"
+                    Text="Colorized columns" />
 
-        <Button Text="Colorized columns and triggers"
-                Clicked="Button_Clicked_4"/>
+            <Button Clicked="Button_Clicked_4"
+                    Text="Colorized columns and triggers" />
 
-        <Button Text="Dynamic items"
-                Clicked="Button_Clicked_5"/>
+            <Button Clicked="Button_Clicked_6"
+                    Text="Custom cells" />
 
-        <Button Text="Custom cells"
-                Clicked="Button_Clicked_6"/>
-    </VerticalStackLayout>
+            <Button Clicked="Button_Clicked_5"
+                    Text="Dynamic items" />
+
+            <Button Clicked="Button_Clicked_7"
+                    Text="Dynamic columns" />
+
+            <Button Clicked="Button_Clicked_8"
+                    Text="Small items DataGrid" />
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

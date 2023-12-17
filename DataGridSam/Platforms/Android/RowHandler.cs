@@ -2,6 +2,7 @@
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using System;
@@ -22,9 +23,21 @@ namespace DataGridSam.Handlers
 
         protected override LayoutViewGroup CreatePlatformView()
         {
-            var n = new LayoutViewGroupCustom(Context, OnLayoutChanged);//base.CreatePlatformView();
-            n.TouchDelegate = new GestureT(this, n);
+            var n = new LayoutViewGroupCustom(Context, OnLayoutChanged);
+            n.TouchDelegate = new GestureTouch(this, n);
             return n;
+        }
+
+        protected override void ConnectHandler(LayoutViewGroup platformView)
+        {
+            ((LayoutViewGroupCustom)platformView).RowHandler = this;
+            base.ConnectHandler(platformView);
+        }
+
+        protected override void DisconnectHandler(LayoutViewGroup platformView)
+        {
+            ((LayoutViewGroupCustom) platformView).RowHandler = null;
+            base.DisconnectHandler(platformView);
         }
 
         private void OnLayoutChanged()
@@ -88,6 +101,17 @@ namespace DataGridSam.Handlers
             return new RippleDrawable(GetRippleColorSelector(color.ToPlatform()), null, mask);
         }
 
+        internal void UpdateTapColor(Color color)
+        {
+//#if ANDROID21_0_OR_GREATER
+            if (rippleLayout?.Background is RippleDrawable ripple)
+            {
+                var ls = GetRippleColorSelector(color.ToAndroid());
+                ripple.SetColor(ls);
+            }
+//#endif
+        }
+
         private static ColorStateList GetRippleColorSelector(int pressedColor)
         {
             return new ColorStateList
@@ -102,6 +126,8 @@ namespace DataGridSam.Handlers
     {
         private readonly Action? onLayoutChanged;
 
+        public RowHandler? RowHandler { get; set; }
+
         public LayoutViewGroupCustom(Android.Content.Context context, Action? onLayoutChanged) : base(context)
         {
             this.onLayoutChanged = onLayoutChanged;
@@ -114,7 +140,7 @@ namespace DataGridSam.Handlers
         }
     }
 
-    internal class GestureT : TouchDelegate
+    internal class GestureTouch : TouchDelegate
     {
         private readonly RowHandler _host;
         private readonly int _touchSlop;
@@ -122,7 +148,7 @@ namespace DataGridSam.Handlers
         private float startY;
         private bool isPressedAndIdle;
 
-        public GestureT(RowHandler host, Android.Views.View view) : base(null, view)
+        public GestureTouch(RowHandler host, Android.Views.View view) : base(null, view)
         {
             _host = host;
             _touchSlop = ViewConfiguration.Get(host.Context)?.ScaledTouchSlop ?? 5;

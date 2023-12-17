@@ -16,19 +16,15 @@ public partial class DefaultCollectionPage : ContentPage
 	}
 
 	public ObservableCollection<User> Items { get; set; }
-    public ICommand CommandAddItem => new Command(async () =>
-    {
-        var page = new AddUserPage();
-        await Navigation.PushAsync(page);
-
-        var res = await page.GetResult(Items);
-        if (res == null)
-            return;
-
-        Items.Insert(res.Index, res.User);
-        await Task.Delay(100);
-        ScrollTo(res.Index);
-    });
+    public ICommand CommandAddItem => CommandCollector.GetCommandCreateUser(
+        () => Items,
+        async (res) =>
+        {
+            Items.Insert(res.Index, res.User);
+            await Task.Delay(100);
+            ScrollTo(res.Index);
+        }
+    );
 
     public void ScrollTo(int index)
     {

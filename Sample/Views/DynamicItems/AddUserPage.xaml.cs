@@ -1,27 +1,55 @@
 using Sample.Models;
+using System.Collections;
 using System.Windows.Input;
 
 namespace Sample.Views.DynamicItems;
 
 public partial class AddUserPage : ContentPage
 {
-	private User? userResult;
-    private TaskCompletionSource<User?> result { get; set; } = new();
+    private readonly IList _context;
+    private readonly User? _editUser;
 
-    public AddUserPage()
-	{
-		InitializeComponent();
-		BindingContext = this;
-	}
+    public AddUserPage(IList context)
+    {
+        _context = context;
 
-	public string? FirstName { get; set; } = "Adam";
-	public string? LastName { get; set; } = "Wood";
-	public DateTime Birthday { get; set; } = new DateTime(DateTime.Now.Year - 18, 1, 1);
-	public Ranks Rank { get; set; } = Ranks.OfficePlankton;
-	public int Index { get; set; } = -1;
+        FirstName = "Adam";
+        LastName = "Wood";
+        Birthday = new DateTime(DateTime.Now.Year - 18, 1, 1);
+        Rank = Ranks.OfficePlankton;
+        Index = -1;
 
-	public ICommand CommandSelectRank => new Command(async () =>
-	{
+        InitializeComponent();
+        BindingContext = this;
+    }
+
+    public AddUserPage(IList context, User editUser)
+    {
+        _context = context;
+        _editUser = editUser;
+        IsEditMode = true;
+
+        FirstName = editUser.FirstName;
+        LastName = editUser.LastName;
+        Birthday = editUser.BirthDate;
+        Rank = editUser.Rank;
+        Index = context.IndexOf(editUser);
+
+        InitializeComponent();
+        BindingContext = this;
+    }
+
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public DateTime Birthday { get; set; }
+    public Ranks Rank { get; set; }
+    public int Index { get; set; }
+    public bool IsEditMode { get; }
+
+    public AddUserResult? CreatedResult { get; private set; }
+
+    public ICommand CommandSelectRank => new Command(async () =>
+    {
         const string cancel = "Cancel";
 
         string[] items = Enum.GetValues<Ranks>()
@@ -37,59 +65,38 @@ public partial class AddUserPage : ContentPage
             return;
 
         var newRank = Enum.Parse<Ranks>(res);
-		Rank = newRank;
+        Rank = newRank;
     });
 
     public ICommand CommandCreate => new Command(() =>
-	{
-		if (string.IsNullOrWhiteSpace(FirstName))
-			return;
-
-		if (string.IsNullOrWhiteSpace(LastName))
-			return;
-
-        userResult = new User
-		{
-			FirstName = FirstName,
-			LastName = LastName,
-			BirthDate = Birthday,
-			Rank = Rank,
-		};
-		Navigation.PopAsync();
-	});
-
-    protected override void OnDisappearing()
     {
-        base.OnDisappearing();
-		result.TrySetResult(userResult);
-    }
+        if (string.IsNullOrWhiteSpace(FirstName))
+            return;
 
-	public async Task<AddUserResult?> GetResult(IList<User> source)
-	{
-		var res = await result.Task;
-		if (res == null)
-			return null;
-
+        if (string.IsNullOrWhiteSpace(LastName))
+            return;
 
         int index = Index;
-        if (index < 0 || index > source.Count - 1)
-            index = source.Count;
+        if (index < 0 || index > _context.Count - 1)
+            index = _context.Count;
 
-		return new AddUserResult
-		{
-			Index = index,
-			User = res,
-		};
-    }
+        CreatedResult = new AddUserResult
+        {
+            Index = index,
+            User = new User
+            {
+                FirstName = FirstName,
+                LastName = LastName,
+                BirthDate = Birthday,
+                Rank = Rank,
+            }
+        };
+        Navigation.PopAsync();
+    });
 
-	public class AddUserResult
-	{
-		public required int Index { get; init; }
-		public required User User { get; init; }
-	}
-
-    private void Button_Clicked(object sender, EventArgs e)
+    public class AddUserResult
     {
-
+        public required int Index { get; init; }
+        public required User User { get; init; }
     }
 }

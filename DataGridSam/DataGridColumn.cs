@@ -24,7 +24,11 @@ namespace DataGridSam
             typeof(string),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => //raw(b, o, n, "header, property name")
+            {
+                if (b is DataGridColumn self)
+                    self.DataGrid?.OnColumnRebind(self);
+            }
         );
         public string? PropertyName
         {
@@ -38,7 +42,7 @@ namespace DataGridSam
             typeof(string),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, title")
         );
         public string? Title
         {
@@ -52,7 +56,11 @@ namespace DataGridSam
             typeof(string),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) =>
+            {
+                if (b is DataGridColumn self)
+                    self.DataGrid?.OnColumnRebind(self);
+            }
         );
         public string? StringFormat
         {
@@ -66,7 +74,11 @@ namespace DataGridSam
             typeof(GridLength),
             typeof(DataGridColumn),
             GridLength.Star,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) =>
+            {
+                if (b is DataGridColumn self)
+                    self.DataGrid?.OnColumnWidthChanged(self);
+            }
         );
         [TypeConverter(typeof(GridLengthTypeConverter))]
         public GridLength Width
@@ -89,7 +101,7 @@ namespace DataGridSam
         );
         private void List_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            DataGrid?.Draw();
+            DataGrid?.TryRedraw("header, cell triggers");
         }
         public IList<CellTrigger> CellTriggers => (IList<CellTrigger>)GetValue(CellTriggersProperty);
 
@@ -99,7 +111,7 @@ namespace DataGridSam
             typeof(Color),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell background color")
         );
         public Color? CellBackgroundColor
         {
@@ -113,7 +125,7 @@ namespace DataGridSam
             typeof(DataTemplate),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell template")
         );
         public DataTemplate? CellTemplate
         {
@@ -127,7 +139,7 @@ namespace DataGridSam
             typeof(Color),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell text color")
         );
         public Color? CellTextColor
         {
@@ -141,7 +153,7 @@ namespace DataGridSam
             typeof(double?),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell font size")
         );
         public double? CellFontSize
         {
@@ -155,7 +167,7 @@ namespace DataGridSam
             typeof(FontAttributes?),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell font attributes")
         );
         public FontAttributes? CellFontAttributes
         {
@@ -169,7 +181,7 @@ namespace DataGridSam
             typeof(TextAlignment?),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell horizontal text alignment")
         );
         public TextAlignment? CellHorizontalTextAlignment
         {
@@ -183,7 +195,7 @@ namespace DataGridSam
             typeof(TextAlignment?),
             typeof(DataGridColumn),
             null,
-            propertyChanged: Draw
+            propertyChanged: (b, o, n) => Draw(b, o, n, "header, cell vertical text alignment")
         );
         public TextAlignment? CellVerticalTextAlignment
         {
@@ -197,12 +209,13 @@ namespace DataGridSam
             typeof(Thickness),
             typeof(DataGridColumn),
             new Thickness(-322, 0, 0, 0),
-            propertyChanged: (b,o,n) =>
+            propertyChanged: (b, o, n) =>
             {
                 if (b is DataGridColumn self)
+                {
                     self.IsCellPaddingNull = ((Thickness)n).Left == -322;
-
-                Draw(b,o,n);
+                    self.DataGrid?.TryUpdateCellsPadding(self.Index);
+                }
             }
         );
         public Thickness CellPadding
@@ -218,10 +231,10 @@ namespace DataGridSam
             Index = columnId ?? -1;
         }
 
-        internal static void Draw(BindableObject b, object o, object n)
+        internal static void Draw(BindableObject b, object o, object n, string reason)
         {
             if (b is DataGridColumn self)
-                self.DataGrid?.Draw();
+                self.DataGrid?.TryRedraw(reason);
         }
     }
 }

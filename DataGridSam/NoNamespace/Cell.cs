@@ -29,7 +29,9 @@ public class Cell : IDataTriggerExecutor
             {
                 Padding = ResolvePadding(),
             };
-            View.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
+
+            if (!string.IsNullOrEmpty(column.PropertyName))
+                View.SetBinding(Label.TextProperty, new Binding(column.PropertyName, stringFormat: column.StringFormat));
         }
         else
         {
@@ -56,8 +58,11 @@ public class Cell : IDataTriggerExecutor
                     break;
             }
         }
+
+        UpdatePadding();
     }
 
+    internal DataGridColumn Column => _column;
     internal View View { get; private set; }
     internal Color? BackgroundColor { get; private set; }
     internal Color? TriggeredBackgroundColor { get; private set; }
@@ -132,6 +137,20 @@ public class Cell : IDataTriggerExecutor
     internal void ClearEnabledTriggers()
     {
         _enabledTriggers.Clear();
+    }
+
+    internal void Rebind()
+    {
+        if (!string.IsNullOrEmpty(_column.PropertyName))
+            View.SetBinding(Label.TextProperty, new Binding(_column.PropertyName, stringFormat: _column.StringFormat));
+        else
+            View.RemoveBinding(Label.TextProperty);
+    }
+
+    internal void UpdatePadding()
+    {
+        if (View is LabelCell cell)
+            cell.Padding = ResolvePadding();
     }
 
     public bool ExecuteTrigger(IDataTrigger trigger, object? value)

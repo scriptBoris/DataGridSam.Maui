@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Sample.Views"
+             xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
+             x:Class="Sample.Views.DataGridDynamicColumnsPage"
+             x:DataType="local:DataGridDynamicColumnsPage"
+             Title="Dynamic columns">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding CommandAddColumnBirthday}"
+                     Text="Add" />
+        <ToolbarItem Command="{Binding CommandRemoveColumn}"
+                     Text="Remove" />
+    </ContentPage.ToolbarItems>
+
+    <sam:DataGrid x:Name="dataGrid"
+                  BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                  BordersThickness="5"
+                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                  CellPadding="5,15"
+                  CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                  HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                  HeaderFontSize="16"
+                  HeaderHorizontalAlignment="Center"
+                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
+                  ItemsSource="{Binding Items}">
+        <sam:DataGridColumn Title="First name"
+                            PropertyName="FirstName" />
+
+        <sam:DataGridColumn Title="Last name"
+                            PropertyName="LastName" />
+
+    </sam:DataGrid>
+</ContentPage>

@@ -23,7 +23,7 @@ namespace DataGridSam
             typeof(Color),
             typeof(CellTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b,o,n) => Update(b,o,n, "cell trigger, background color")
         );
         public Color? BackgroundColor
         {
@@ -31,13 +31,13 @@ namespace DataGridSam
             set => SetValue(BackgroundColorProperty, value);
         }
 
-        // text color color
+        // text color
         public static readonly BindableProperty TextColorProperty = BindableProperty.Create(
             nameof(TextColor),
             typeof(Color),
             typeof(CellTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "cell trigger, text color")
         );
         public Color? TextColor
         {
@@ -51,7 +51,7 @@ namespace DataGridSam
             typeof(double?),
             typeof(CellTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "cell trigger, font size")
         );
         public double? FontSize
         {
@@ -65,7 +65,7 @@ namespace DataGridSam
             typeof(FontAttributes?),
             typeof(CellTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "cell trigger, font attributes")
         );
         public FontAttributes? FontAttributes
         {
@@ -79,7 +79,7 @@ namespace DataGridSam
             typeof(TextAlignment?),
             typeof(CellTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "cell trigger, vertical text alignment")
         );
         public TextAlignment? VerticalTextAlignment
         {
@@ -93,7 +93,7 @@ namespace DataGridSam
             typeof(TextAlignment?),
             typeof(CellTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "cell trigger, horizontal text alignment")
         );
         public TextAlignment? HorizontalTextAlignment
         {
@@ -102,11 +102,11 @@ namespace DataGridSam
         }
         #endregion bindalbe props
 
-        public static void Update(BindableObject b, object old, object newest)
+        public static void Update(BindableObject b, object old, object newest, string reason)
         {
             if (b is IDataTrigger self)
             {
-                self.DataGrid?.Draw();
+                self.DataGrid?.TryRedraw(reason);
             }
         }
     }

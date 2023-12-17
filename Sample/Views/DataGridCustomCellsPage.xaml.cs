@@ -22,18 +22,14 @@ public partial class DataGridCustomCellsPage
     public ObservableCollection<User> Items { get; private set; }
     public ICommand CommandSelectedRow { get; private set; }
     public ICommand CommandLongSelectedRow { get; private set; }
-    public ICommand CommandAddItem => new Command(async () =>
-    {
-        var page = new AddUserPage();
-        await Navigation.PushAsync(page);
-
-        var res = await page.GetResult(Items);
-        if (res == null)
-            return;
-
-        Items.Insert(res.Index, res.User);
-        ScrollTo(res.Index);
-    });
+    public ICommand CommandAddItem => CommandCollector.GetCommandCreateUser(
+        () => Items,
+        (res) =>
+        {
+            Items.Insert(res.Index, res.User);
+            ScrollTo(res.Index);
+        }
+    );
 
     private async void OnUserEdited(User user)
     {

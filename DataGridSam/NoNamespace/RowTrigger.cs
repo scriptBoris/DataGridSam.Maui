@@ -22,7 +22,7 @@ namespace DataGridSam
             typeof(Color), 
             typeof(RowTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b,o,n) => Update(b,o,n, "row trigger, background color")
         );
         public Color? BackgroundColor 
         {
@@ -36,7 +36,7 @@ namespace DataGridSam
             typeof(Color),
             typeof(RowTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "row trigger, text color")
         );
         public Color? TextColor
         {
@@ -50,7 +50,7 @@ namespace DataGridSam
             typeof(double?),
             typeof(RowTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "row trigger, font size")
         );
         public double? FontSize
         {
@@ -64,7 +64,7 @@ namespace DataGridSam
             typeof(FontAttributes?),
             typeof(RowTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "row trigger, font attributes")
         );
         public FontAttributes? FontAttributes
         {
@@ -78,7 +78,7 @@ namespace DataGridSam
             typeof(TextAlignment?),
             typeof(RowTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "row trigger, vertical text alignment")
         );
         public TextAlignment? VerticalTextAlignment
         {
@@ -92,7 +92,7 @@ namespace DataGridSam
             typeof(TextAlignment?),
             typeof(RowTrigger),
             null,
-            propertyChanged: Update
+            propertyChanged: (b, o, n) => Update(b, o, n, "row trigger, horizontal text alignment")
         );
         public TextAlignment? HorizontalTextAlignment
         {
@@ -101,11 +101,11 @@ namespace DataGridSam
         }
         #endregion bindalbe props
 
-        public static void Update(BindableObject b, object old, object newest)
+        public static void Update(BindableObject b, object old, object newest, string reason)
         {
             if (b is IDataTrigger self)
             {
-                self.DataGrid?.Draw();
+                self.DataGrid?.TryRedraw(reason);
             }
         }
     }

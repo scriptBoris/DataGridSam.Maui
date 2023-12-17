@@ -9,51 +9,51 @@
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding CommandAddItem}"
-                     Text="Add"/>
+                     Text="Add" />
     </ContentPage.ToolbarItems>
 
     <Grid RowDefinitions="Auto, *"
           RowSpacing="0">
-        <Grid ColumnDefinitions="1*, 1*, 100"
+        <Grid Padding="0"
               BackgroundColor="#222"
-              Padding="0">
-            <Label Text="First name"
-                   TextColor="#ccc"
-                   Grid.Column="0"/>
-            <Label Text="Last name"
-                   TextColor="#ccc"
-                   Grid.Column="1"/>
-            <Label Text="Birthdate"
-                   TextColor="#ccc"
-                   Grid.Column="2"/>
+              ColumnDefinitions="1*, 1*, 100">
+            <Label Grid.Column="0"
+                   Text="First name"
+                   TextColor="#ccc" />
+            <Label Grid.Column="1"
+                   Text="Last name"
+                   TextColor="#ccc" />
+            <Label Grid.Column="2"
+                   Text="Birthdate"
+                   TextColor="#ccc" />
         </Grid>
-        
-        <CollectionView Grid.Row="1"
-                        ItemsSource="{Binding Items}"
+
+        <CollectionView x:Name="collectionView"
+                        Grid.Row="1"
                         ItemSizingStrategy="MeasureAllItems"
-                        x:Name="collectionView">
+                        ItemsSource="{Binding Items}">
 
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" 
-                                   ItemSpacing="0"/>
+                <LinearItemsLayout ItemSpacing="0"
+                                   Orientation="Vertical" />
             </CollectionView.ItemsLayout>
 
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:User">
-                    <Grid ColumnDefinitions="1*, 1*, 100"
+                    <Grid Padding="0"
                           BackgroundColor="#323232"
-                          Padding="0">
-                        <Label Text="{Binding FirstName}"
-                               TextColor="#ccc"
-                               Grid.Column="0"/>
-                    
-                        <Label Text="{Binding LastName}"
-                               TextColor="#ccc"
-                               Grid.Column="1"/>
-                    
-                        <Label Text="{Binding BirthDate}"
-                               TextColor="#ccc"
-                               Grid.Column="2"/>
+                          ColumnDefinitions="1*, 1*, 100">
+                        <Label Grid.Column="0"
+                               Text="{Binding FirstName}"
+                               TextColor="#ccc" />
+
+                        <Label Grid.Column="1"
+                               Text="{Binding LastName}"
+                               TextColor="#ccc" />
+
+                        <Label Grid.Column="2"
+                               Text="{Binding BirthDate}"
+                               TextColor="#ccc" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

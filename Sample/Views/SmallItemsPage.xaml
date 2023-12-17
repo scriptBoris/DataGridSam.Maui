@@ -1,16 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:Sample.Models"
+             xmlns:local="clr-namespace:Sample.Views"
              xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
-             xmlns:views="clr-namespace:Sample.Views"
-             x:Class="Sample.Views.DataGridSamplePage"
-             x:DataType="views:DataGridSamplePage"
-             Title="Sample"
-             BackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}">
+             x:Class="Sample.Views.SmallItemsPage"
+             x:DataType="local:SmallItemsPage"
+             Title="Small items Data Grid">
 
-    <sam:DataGrid BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
-                  BordersThickness="1"
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding CommandCreateUser}"
+                     Text="Create user" />
+    </ContentPage.ToolbarItems>
+
+    <sam:DataGrid x:Name="dataGrid"
+                  BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                  BordersThickness="5"
                   CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
                   CellPadding="5"
                   CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
@@ -28,7 +32,7 @@
                             PropertyName="LastName" />
 
         <sam:DataGridColumn Title="Birth date"
-                            Width="90"
+                            Width="100"
                             CellHorizontalTextAlignment="End"
                             PropertyName="BirthDate"
                             StringFormat="{}{0:dd.MM.yyyy}">
@@ -41,5 +45,4 @@
             </sam:DataGridColumn.CellPadding>
         </sam:DataGridColumn>
     </sam:DataGrid>
-
 </ContentPage>

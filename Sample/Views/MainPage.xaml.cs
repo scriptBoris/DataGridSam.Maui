@@ -6,10 +6,10 @@ public partial class MainPage : ContentPage
 	{
 		InitializeComponent();
 	}
-
+    
     private void Button_Clicked(object sender, EventArgs e)
     {
-		Navigation.PushAsync(new DataGridSamplePage());
+        Navigation.PushAsync(new DataGridSamplePage());
     }
 
     private void Button_Clicked_1(object sender, EventArgs e)
@@ -40,5 +40,15 @@ public partial class MainPage : ContentPage
     private void Button_Clicked_6(object sender, EventArgs e)
     {
         Navigation.PushAsync(new DataGridCustomCellsPage());
+    }
+
+    private void Button_Clicked_7(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DataGridDynamicColumnsPage());
+    }
+
+    private void Button_Clicked_8(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new SmallItemsPage());
     }
 }

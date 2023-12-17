@@ -16,7 +16,7 @@ namespace DataGridSam;
 public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 {
     private readonly DataGrid _dataGrid;
-    private readonly Cell[] _cells;
+    private readonly List<Cell> _cells = new();
     private readonly List<IDataTrigger> _enabledTriggers = new();
     private readonly IList<IDataTrigger> _triggers;
     private readonly RowBackgroundView _backgroundView = new();
@@ -29,7 +29,6 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     public Row(DataGrid dataGrid, IList<IDataTrigger> triggers)
     {
         _dataGrid = dataGrid;
-        _cells = new Cell[dataGrid.Columns.Count];
         _triggers = triggers;
 
         BackgroundColor = dataGrid.CellBackgroundColor;
@@ -39,19 +38,20 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         {
             var col = dataGrid.Columns[i];
             var cell = new Cell(col, this);
-            
-            _cells[i] = cell;
+
+            _cells.Add(cell);
             Children.Add(cell.View);
         }
     }
 
     public new Color BackgroundColor { get; private set; }
     public Color? TriggeredBackgroundColor { get; private set; }
-    public Color? TextColor { get; set; }
-    public double? FontSize { get; set; }
-    public FontAttributes? FontAttributes { get; set; }
-    public TextAlignment? VerticalTextAlignment { get; set; }
-    public TextAlignment? HorizontalTextAlignment { get; set; }
+    public Color? TextColor { get; private set; }
+    public double? FontSize { get; private set; }
+    public FontAttributes? FontAttributes { get; private set; }
+    public TextAlignment? VerticalTextAlignment { get; private set; }
+    public TextAlignment? HorizontalTextAlignment { get; private set; }
+    internal bool IsRemoved { get; set; }
     public Color TapColor => _dataGrid.TapSelectedColor;
 
     private double[] Widths => _dataGrid.CachedWidths;
@@ -137,7 +137,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         return hasChanges;
     }
 
-    internal void UpdateVisual()
+    internal void UpdateVisual(bool needRecalcMeasure = false)
     {
         TriggeredBackgroundColor = _enabledTriggers.FirstNonNull(x => x.BackgroundColor);
         TextColor = _enabledTriggers.FirstNonNull(x => x.TextColor);
@@ -150,18 +150,88 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         foreach (var cell in _cells)
             cell.UpdateVisual();
 
-        Redraw();
+        RedrawBackground();
+
+        if (needRecalcMeasure)
+            InvalidateMeasure();
     }
 
-    internal void Redraw()
+    internal void RedrawBackground()
     {
-        var colors = new Color?[_cells.Length];
-        for (int i = 0; i < _cells.Length; i++)
+        var colors = new Color?[_cells.Count];
+        for (int i = 0; i < _cells.Count; i++)
             colors[i] = _cells[i].BackgroundColor?.MultiplyAlpha(1 - externalBackgroundColorFill);
 
         float spacing = (float)_dataGrid.BordersThickness;
         var mainColor = BackgroundColor.MixColor(externalBackgroundColor, externalBackgroundColorFill);
         _backgroundView.Redraw(spacing, WidthsSkia, mainColor, colors);
+    }
+
+    internal void Refab()
+    {
+        int max = Math.Max(_dataGrid.Columns.Count, _cells.Count);
+
+        for (int i = 0; i < max; i++)
+        {
+            var cell = (i < _cells.Count) ? _cells[i] : null;
+            var gridCol = (i < _dataGrid.Columns.Count) ? _dataGrid.Columns[i] : null;
+            var cellCol = cell?.Column;
+
+            // No changes (or both is null? WTF??)
+            if (cellCol == gridCol)
+            {
+                continue;
+            }
+            // Removed last
+            else if (gridCol == null && cell != null)
+            {
+                _cells.Remove(cell);
+                Children.Remove(cell.View);
+            }
+            // Added
+            else if (cellCol == null && gridCol != null)
+            {
+                var newCell = new Cell(gridCol, this);
+                newCell.UpdateVisual();
+                _cells.Add(newCell);
+                Children.Add(newCell.View);
+            }
+            // replace
+            else if (gridCol != null)
+            {
+                var newCell = new Cell(gridCol, this);
+                newCell.UpdateVisual();
+                _cells[i] = newCell;
+                Children[i + 1] = newCell.View;
+            }
+        }
+
+        //RedrawBackground();
+        //InvalidateMeasure();
+        UpdateVisual(true);
+    }
+
+    internal void Rebind(int columnId)
+    {
+        _cells[columnId].Rebind();
+    }
+
+    internal void UpdateCellPadding(int? cellId)
+    {
+        if (cellId != null)
+        {
+            _cells[cellId.Value].UpdatePadding();
+        }
+        else
+        {
+            foreach (var cell in _cells)
+                cell.UpdatePadding();
+        }
+    }
+
+    internal void ThrowInvalidateMeasure()
+    {
+        InvalidateMeasure();
     }
 
     protected override ILayoutManager CreateLayoutManager()
@@ -174,9 +244,9 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         double x = 0;
 
         ((IView)_backgroundView).Arrange(bounds);
-        Redraw();
+        //RedrawBackground();
 
-        for (int i = 0; i < _cells.Length; i++)
+        for (int i = 0; i < _cells.Count; i++)
         {
             var cell = _cells[i];
             double w = Widths[i];
@@ -199,11 +269,16 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         if (Widths.Length == 0)
             _dataGrid.UpdateCellsWidthCache(widthConstraint, false);
 #endif
+        if (double.IsInfinity(widthConstraint))
+        {
+            widthConstraint = Widths.Sum();
+        }
 
         ((IView)_backgroundView).Measure(widthConstraint, heightConstraint);
 
+        //int index = _dataGrid.ItemsSource?.IndexOf(BindingContext) ?? -1;
         double h = 0;
-        for (int i = 0; i < _cells.Length; i++)
+        for (int i = 0; i < _cells.Count; i++)
         {
             var cell = _cells[i];
             double w = Widths[i];
@@ -345,7 +420,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     {
         externalBackgroundColor = color;
         externalBackgroundColorFill = fill;
-        Redraw();
+        RedrawBackground();
     }
 
     /// <summary>
@@ -355,7 +430,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     public void RestoreRowBackgroundColor(float fill = 1)
     {
         externalBackgroundColorFill = 1 - fill;
-        Redraw();
+        RedrawBackground();
     }
 }
 

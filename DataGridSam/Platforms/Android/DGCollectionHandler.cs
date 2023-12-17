@@ -3,6 +3,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using DataGridSam.Internal;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
@@ -13,10 +14,10 @@ namespace DataGridSam.Handlers
     public partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     {
         private readonly List<GetRowRequestItem> tcsList = new();
-        private DividerItemDecoration? last;
+        private DividerItemDecoration? itemDecorator;
         private ScrollListener? scrollListener;
 
-        private DGCollection Proxy => (DGCollection)VirtualView;
+        private DGCollection? Proxy => VirtualView as DGCollection;
 
         protected override RecyclerView CreatePlatformView()
         {
@@ -31,12 +32,12 @@ namespace DataGridSam.Handlers
 
             if (scrollListener == null)
             {
-                scrollListener  = new ScrollListener(this);
+                scrollListener = new ScrollListener(this);
                 PlatformView.AddOnScrollListener(scrollListener);
             }
         }
 
-        public virtual void OnScrollChange()
+        public virtual void OnScrolled()
         {
             var m = tcsList.Where(x => x.TrySetTcs(GetRowFast(x.Index))).ToArray();
 
@@ -57,30 +58,17 @@ namespace DataGridSam.Handlers
 
         public void UpdateBorderColor()
         {
-            Update(PlatformView);
+            UpdateItemDecorator();
         }
 
         public void UpdateBorderWidth()
         {
-            Update(PlatformView);
+            UpdateItemDecorator();
         }
 
         private void Update(RecyclerView res)
         {
-            if (last != null)
-                res.RemoveItemDecoration(last);
-
-            int color = Proxy.BorderColor.ToAndroid().ToArgb();
-            int width = (int)(Proxy.BorderThickness * DeviceDisplay.MainDisplayInfo.Density);
-
-            last ??= new DividerItemDecoration(Context, DividerItemDecoration.Vertical);
-            var drawable = new GradientDrawable(GradientDrawable.Orientation.BottomTop, new[] {
-                color,
-                color,
-            });
-            drawable.SetSize(1, width);
-            last.Drawable = drawable;
-            res.AddItemDecoration(last);
+            UpdateItemDecorator(res);
         }
 
         public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
@@ -98,7 +86,7 @@ namespace DataGridSam.Handlers
 
                 if (timeout != null)
                 {
-                    Proxy.Dispatcher.StartTimer(timeout.Value, () =>
+                    Proxy?.Dispatcher.StartTimer(timeout.Value, () =>
                     {
                         tcsList.Remove(tscItem);
                         tsc.TrySetResult(null);
@@ -124,6 +112,69 @@ namespace DataGridSam.Handlers
             return null;
         }
 
+        // TODO Нужно ли это?
+        public IEnumerable<Row> GetVisibleRows()
+        {
+            var list = new List<Row>();
+            var layoutManager = PlatformView.GetLayoutManager();
+
+            int i = 0;
+            while(true)
+            {
+                var aview = layoutManager?.GetChildAt(i);
+                if (aview is Microsoft.Maui.Controls.Handlers.Items.ItemContentView icv)
+                {
+                    var custom = icv.GetChildAt(0);
+                    if (custom is LayoutViewGroupCustom pl && pl.RowHandler != null)
+                    {
+                        var row = (Row)pl.RowHandler.VirtualView;
+                        list.Add(row);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+                i++;
+            }
+
+            return list;
+        }
+
+        private void UpdateItemDecorator(RecyclerView? platformView = null)
+        {
+            if (Proxy == null)
+                return;
+
+            platformView ??= PlatformView;
+
+            if (itemDecorator != null)
+            {
+                platformView.RemoveItemDecoration(itemDecorator);
+                itemDecorator.Dispose();
+            }
+
+            var color = Proxy.BorderColor.ToAndroid();
+            int width = (int)(Proxy.BorderThickness * DeviceDisplay.MainDisplayInfo.Density);
+
+            itemDecorator = new DividerItemDecoration(width, color);
+
+            platformView.AddItemDecoration(itemDecorator);
+        }
+
+        internal void UpdateTapSelectColor(Microsoft.Maui.Graphics.Color color)
+        {
+            if (Proxy == null)
+                return;
+
+            var rows = GetVisibleRows();
+            foreach (var item in rows)
+            {
+                if (item.Handler is RowHandler row)
+                    row.UpdateTapColor(color);
+            }
+        }
+
         private struct GetRowRequestItem
         {
             public TaskCompletionSource<Row?> Tsc { get; set; }
@@ -134,7 +185,7 @@ namespace DataGridSam.Handlers
                 if (row != null)
                 {
                     Tsc.TrySetResult(row);
-                    return true;    
+                    return true;
                 }
 
                 return false;
@@ -154,7 +205,90 @@ namespace DataGridSam.Handlers
         public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
         {
             base.OnScrolled(recyclerView, dx, dy);
-            handler.OnScrollChange();
+            handler.OnScrolled();
+        }
+    }
+
+    public class DividerItemDecoration : RecyclerView.ItemDecoration
+    {
+        private readonly Android.Graphics.Paint _paint;
+
+        public DividerItemDecoration(int width, Android.Graphics.Color color)
+        {
+            Width = width;
+            Color = color;
+            WidthDel2 = (int)(width * 0.3f);
+
+            _paint = new()
+            {
+                Color = color,
+            };
+        }
+
+        public int Width { get; private set; }
+        public int WidthDel2 { get; private set; }
+        public Android.Graphics.Color Color { get; private set; }
+
+        public override void OnDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state)
+        {
+            int x = 0;// parent.PaddingLeft;
+            int right = parent.Width;// - parent.PaddingRight;
+
+            int childCount = parent.ChildCount;
+            for (int i = 0; i < childCount - 1; i++)
+            {
+                var child = parent.GetChildAt(i);
+                var parameters = (RecyclerView.LayoutParams)child.LayoutParameters;
+
+                //int top = child.Bottom + parameters.BottomMargin;
+                //_drawable.SetBounds(0, top, right, bottom);
+                //_drawable.Draw(c);
+
+                int top = child.Bottom + parameters.BottomMargin;
+                int bottom = top + Width;
+                c.DrawRect(0, top, right, bottom, _paint);
+                //c.DrawLine(0, top, right, top, _paint2);
+            }
+        }
+
+        public override void GetItemOffsets(Android.Graphics.Rect outRect, Android.Views.View view, RecyclerView parent, RecyclerView.State state)
+        {
+            // Добавляем отступ только между элементами, а не после последнего элемента
+            outRect.Bottom = Width;
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            _paint.Dispose();
+        }
+
+        private class LineDrawable : Drawable
+        {
+            private Android.Graphics.Paint paint;
+
+            public LineDrawable(Android.Graphics.Paint paint)
+            {
+                this.paint = paint;
+            }
+
+            public override void Draw(Canvas canvas)
+            {
+                //canvas.DrawLine(Bounds.Left, Bounds.Top, Bounds.Right, Bounds.Bottom, paint);
+                canvas.DrawRect(Bounds, paint);
+            }
+
+            public override void SetAlpha(int alpha)
+            {
+                paint.Alpha = alpha;
+            }
+
+            public override void SetColorFilter(Android.Graphics.ColorFilter? colorFilter)
+            {
+                paint.SetColorFilter(colorFilter);
+            }
+
+            public override int Opacity => paint.Alpha;
         }
     }
 }
