@@ -23,6 +23,18 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     private double cachedWidth;
     private bool isInitialized;
 
+    public event EventHandler<ItemsViewScrolledEventArgs> Scrolled
+    {
+        add
+        {
+            _collection.Scrolled += value;
+        }
+        remove
+        {
+            _collection.Scrolled -= value;
+        }
+    }
+    
     public DataGrid()
     {
         // header
@@ -681,5 +693,15 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
             return await h.GetRowAsync(index, timeout);
 
         return null;
+    }
+
+    public int CalculateVisibleRows()
+    {
+        if (_collection.Handler is IDGCollectionHandler h)
+        {
+            return h.VisibleRows;
+        }
+
+        return 0;
     }
 }

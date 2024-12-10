@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net7.0-android;net7.0-ios</TargetFrameworks>
+		<TargetFrameworks>net8.0-android;net8.0-ios</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
 		<OutputType>Exe</OutputType>
@@ -30,8 +30,8 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-	  <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
-	  <Nullable>enable</Nullable>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net8.0-windows10.0.19041.0</TargetFrameworks>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -52,23 +52,6 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
-	<!-- Android -->
-<ItemGroup Condition="$(TargetFramework.StartsWith('net7.0-android')) != true">
-  <Compile Remove="**\**\*.Android.cs" />
-  <None Include="**\**\*.Android.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-</ItemGroup>
-
-<!-- iOS and Mac Catalyst -->
-<ItemGroup Condition="$(TargetFramework.StartsWith('net7.0-ios')) != true AND $(TargetFramework.StartsWith('net7.0-maccatalyst')) != true">
-  <Compile Remove="**\**\*.MaciOS.cs" />
-  <None Include="**\**\*.MaciOS.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-</ItemGroup>
-
-<!-- Windows -->
-<ItemGroup Condition="$(TargetFramework.Contains('-windows')) != true ">
-  <Compile Remove="**\*.Windows.cs" />
-  <None Include="**\*.Windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
-</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Faker.Net" Version="2.0.154" />
@@ -77,46 +60,46 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\DataGridSam\DataGridSam.csproj" />
+		<ProjectReference Include="..\DataGridSam\DataGridSam.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Views\DataGridSamplePage.xaml.cs">
-	    <DependentUpon>DataGridSamplePage.xaml</DependentUpon>
-	  </Compile>
+		<Compile Update="Views\DataGridSamplePage.xaml.cs">
+			<DependentUpon>DataGridSamplePage.xaml</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Views\DataGridColorizedColumnsAndTriggersPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DataGridColorizedColumnsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DataGridCustomCellsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DataGridDynamicColumnsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DataGridDynamicItems.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DataGridTriggersPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DefaultCollectionPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\DynamicItems\AddUserPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\MainPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\SmallItemsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
+		<MauiXaml Update="Views\DataGridColorizedColumnsAndTriggersPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DataGridColorizedColumnsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DataGridCustomCellsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DataGridDynamicColumnsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DataGridDynamicItems.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DataGridTriggersPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DefaultCollectionPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DynamicItems\AddUserPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\MainPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\SmallItemsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 </Project>
