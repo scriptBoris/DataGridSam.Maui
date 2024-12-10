@@ -694,14 +694,4 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 
         return null;
     }
-
-    public int CalculateVisibleRows()
-    {
-        if (_collection.Handler is IDGCollectionHandler h)
-        {
-            return h.VisibleRows;
-        }
-
-        return 0;
-    }
 }
