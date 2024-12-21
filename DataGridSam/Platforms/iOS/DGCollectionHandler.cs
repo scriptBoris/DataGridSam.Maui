@@ -1,43 +1,50 @@
-﻿using DataGridSam.Handlers;
-using Foundation;
+﻿using UIKit;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
-using UIKit;
+using DataGridSam.Internal;
+using Microsoft.Maui.Graphics;
 
-namespace DataGridSam.Handlers
+namespace DataGridSam.Platforms.iOS;
+
+public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 {
-    public partial class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
+    protected override ItemsViewController<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, ItemsViewLayout layout)
     {
-        protected override ItemsViewController<ReorderableItemsView> CreateController(ReorderableItemsView itemsView, ItemsViewLayout layout)
-        {
-            var res = base.CreateController(itemsView, layout);
-            var type = res.GetType();
-            return res;
-        }
+        var res = base.CreateController(itemsView, layout);
+        var type = res.GetType();
+        return res;
+    }
 
-        protected override UIView CreatePlatformView()
-        {
-            var res = base.CreatePlatformView();
-            //var cv = res.Subviews.FirstOrDefault() as UICollectionView;
+    protected override UIView CreatePlatformView()
+    {
+        var res = base.CreatePlatformView();
+        //var cv = res.Subviews.FirstOrDefault() as UICollectionView;
 
-            //var l = cv.CollectionViewLayout as ListViewLayout;
-            //l.SectionInset = new UIEdgeInsets(0, 0, 2, 0);
-            //l.MinimumInteritemSpacing = 2;
-            //l.MinimumLineSpacing = 2;
+        //var l = cv.CollectionViewLayout as ListViewLayout;
+        //l.SectionInset = new UIEdgeInsets(0, 0, 2, 0);
+        //l.MinimumInteritemSpacing = 2;
+        //l.MinimumLineSpacing = 2;
 
-            return res;
-        }
+        return res;
+    }
 
-        public void UpdateBorderColor()
-        {
-        }
+    public void UpdateBorderColor()
+    {
+    }
 
-        public void UpdateBorderWidth()
-        {
-        }
+    public void UpdateBorderWidth()
+    {
+    }
 
-        public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
-        {
-            return null;
-        }
+    public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
+    {
+        return null;
+    }
+
+    public void UpdateNativeTapColor(Color color)
+    {
+        // todo сделать нативный эффект нажатия на строку
     }
 }

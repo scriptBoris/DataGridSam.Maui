@@ -1,14 +1,15 @@
-﻿using DataGridSam.Core;
-using DataGridSam.Extensions;
-using DataGridSam.Handlers;
-using DataGridSam.Internal;
-using Microsoft.Maui.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataGridSam.Core;
+using DataGridSam.Extensions;
+using DataGridSam.Internal;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace DataGridSam;
 

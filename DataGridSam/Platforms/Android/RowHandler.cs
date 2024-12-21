@@ -3,6 +3,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using System;
@@ -12,188 +13,187 @@ using System.Text;
 using System.Threading.Tasks;
 using AView = Android.Views.View;
 
-namespace DataGridSam.Handlers
+namespace DataGridSam.Platforms.Android;
+
+public class RowHandler : LayoutHandler
 {
-    public partial class RowHandler : LayoutHandler
+    private AView? rippleLayout;
+
+    public static bool IsSdk21 => Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop;
+    public Row Proxy => (Row)VirtualView;
+
+    protected override LayoutViewGroup CreatePlatformView()
     {
-        private AView? rippleLayout;
+        var n = new LayoutViewGroupCustom(Context, OnLayoutChanged);
+        n.TouchDelegate = new GestureTouch(this, n);
+        return n;
+    }
 
-        public static bool IsSdk21 => Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop;
-        public Row Proxy => (Row)VirtualView;
+    protected override void ConnectHandler(LayoutViewGroup platformView)
+    {
+        ((LayoutViewGroupCustom)platformView).RowHandler = this;
+        base.ConnectHandler(platformView);
+    }
 
-        protected override LayoutViewGroup CreatePlatformView()
+    protected override void DisconnectHandler(LayoutViewGroup platformView)
+    {
+        ((LayoutViewGroupCustom) platformView).RowHandler = null;
+        base.DisconnectHandler(platformView);
+    }
+
+    private void OnLayoutChanged()
+    {
+        if (rippleLayout == null)
+            return;
+
+        rippleLayout.Bottom = PlatformView.Bottom;
+        rippleLayout.Right = PlatformView.Right;
+    }
+
+    internal void AnimationStart(float x, float y)
+    {
+        if (IsSdk21)
         {
-            var n = new LayoutViewGroupCustom(Context, OnLayoutChanged);
-            n.TouchDelegate = new GestureTouch(this, n);
-            return n;
+            RippleStart(x, y);
+            Proxy.OnTapStart();
         }
-
-        protected override void ConnectHandler(LayoutViewGroup platformView)
+        else
         {
-            ((LayoutViewGroupCustom)platformView).RowHandler = this;
-            base.ConnectHandler(platformView);
+            Proxy.OnTapStart_Common();
         }
+    }
 
-        protected override void DisconnectHandler(LayoutViewGroup platformView)
+    internal void AnimationFinish(bool needTrigger)
+    {
+        if (IsSdk21)
         {
-            ((LayoutViewGroupCustom) platformView).RowHandler = null;
-            base.DisconnectHandler(platformView);
+            RippleEnd();
+            Proxy.OnTapFinish(needTrigger ? TapFinishModes.Tap : TapFinishModes.Cancel);
         }
-
-        private void OnLayoutChanged()
+        else
         {
-            if (rippleLayout == null)
-                return;
+            Proxy.OnTapFinish_Common(needTrigger);
+        }
+    }
 
+    private void RippleStart(float x, float y)
+    {
+        if (rippleLayout == null)
+        {
+            rippleLayout = new LayoutViewGroupCustom(Context, null);
             rippleLayout.Bottom = PlatformView.Bottom;
             rippleLayout.Right = PlatformView.Right;
+            rippleLayout.Background = CreateRipple(Proxy.TapColor);
+            PlatformView.AddView(rippleLayout);
         }
 
-        internal void AnimationStart(float x, float y)
-        {
-            if (IsSdk21)
-            {
-                RippleStart(x, y);
-                Proxy.OnTapStart();
-            }
-            else
-            {
-                Proxy.OnTapStart_Common();
-            }
-        }
+        rippleLayout.Background?.SetHotspot(x, y);
+        PlatformView.Pressed = true;
+    }
 
-        internal void AnimationFinish(bool needTrigger)
-        {
-            if (IsSdk21)
-            {
-                RippleEnd();
-                Proxy.OnTapFinish(needTrigger ? TapFinishModes.Tap : TapFinishModes.Cancel);
-            }
-            else
-            {
-                Proxy.OnTapFinish_Common(needTrigger);
-            }
-        }
+    private void RippleEnd()
+    {
+        PlatformView.Pressed = false;
+    }
 
-        private void RippleStart(float x, float y)
-        {
-            if (rippleLayout == null)
-            {
-                rippleLayout = new LayoutViewGroupCustom(Context, null);
-                rippleLayout.Bottom = PlatformView.Bottom;
-                rippleLayout.Right = PlatformView.Right;
-                rippleLayout.Background = CreateRipple(Proxy.TapColor);
-                PlatformView.AddView(rippleLayout);
-            }
+    private RippleDrawable CreateRipple(Color color)
+    {
+        var mask = new ColorDrawable(Colors.White.ToPlatform());
+        return new RippleDrawable(GetRippleColorSelector(color.ToPlatform()), null, mask);
+    }
 
-            rippleLayout.Background?.SetHotspot(x, y);
-            PlatformView.Pressed = true;
-        }
-
-        private void RippleEnd()
-        {
-            PlatformView.Pressed = false;
-        }
-
-        private RippleDrawable CreateRipple(Color color)
-        {
-            var mask = new ColorDrawable(Colors.White.ToPlatform());
-            return new RippleDrawable(GetRippleColorSelector(color.ToPlatform()), null, mask);
-        }
-
-        internal void UpdateTapColor(Color color)
-        {
+    internal void UpdateTapColor(Color color)
+    {
 //#if ANDROID21_0_OR_GREATER
-            if (rippleLayout?.Background is RippleDrawable ripple)
-            {
-                var ls = GetRippleColorSelector(color.ToAndroid());
-                ripple.SetColor(ls);
-            }
+        if (rippleLayout?.Background is RippleDrawable ripple)
+        {
+            var ls = GetRippleColorSelector(color.ToAndroid());
+            ripple.SetColor(ls);
+        }
 //#endif
-        }
-
-        private static ColorStateList GetRippleColorSelector(int pressedColor)
-        {
-            return new ColorStateList
-            (
-                new int[][] { new int[] { } },
-                new int[] { pressedColor, }
-            );
-        }
     }
 
-    public class LayoutViewGroupCustom : LayoutViewGroup
+    private static ColorStateList GetRippleColorSelector(int pressedColor)
     {
-        private readonly Action? onLayoutChanged;
+        return new ColorStateList
+        (
+            new int[][] { new int[] { } },
+            new int[] { pressedColor, }
+        );
+    }
+}
 
-        public RowHandler? RowHandler { get; set; }
+public class LayoutViewGroupCustom : LayoutViewGroup
+{
+    private readonly Action? onLayoutChanged;
 
-        public LayoutViewGroupCustom(Android.Content.Context context, Action? onLayoutChanged) : base(context)
-        {
-            this.onLayoutChanged = onLayoutChanged;
-        }
+    public RowHandler? RowHandler { get; set; }
 
-        protected override void OnLayout(bool changed, int l, int t, int r, int b)
-        {
-            base.OnLayout(changed, l, t, r, b);
-            onLayoutChanged?.Invoke();
-        }
+    public LayoutViewGroupCustom(global::Android.Content.Context context, Action? onLayoutChanged) : base(context)
+    {
+        this.onLayoutChanged = onLayoutChanged;
     }
 
-    internal class GestureTouch : TouchDelegate
+    protected override void OnLayout(bool changed, int l, int t, int r, int b)
     {
-        private readonly RowHandler _host;
-        private readonly int _touchSlop;
-        private float startX;
-        private float startY;
-        private bool isPressedAndIdle;
+        base.OnLayout(changed, l, t, r, b);
+        onLayoutChanged?.Invoke();
+    }
+}
 
-        public GestureTouch(RowHandler host, Android.Views.View view) : base(null, view)
+internal class GestureTouch : TouchDelegate
+{
+    private readonly RowHandler _host;
+    private readonly int _touchSlop;
+    private float startX;
+    private float startY;
+    private bool isPressedAndIdle;
+
+    public GestureTouch(RowHandler host, AView view) : base(null, view)
+    {
+        _host = host;
+        _touchSlop = ViewConfiguration.Get(host.Context)?.ScaledTouchSlop ?? 5;
+    }
+
+    public override bool OnTouchEvent(MotionEvent e)
+    {
+        float x = e.GetX();
+        float y = e.GetY();
+
+        switch (e.ActionMasked)
         {
-            _host = host;
-            _touchSlop = ViewConfiguration.Get(host.Context)?.ScaledTouchSlop ?? 5;
-        }
+            case MotionEventActions.Down:
+                isPressedAndIdle = true;
+                startX = x;
+                startY = y;
+                _host.AnimationStart(x, y);
+                break;
 
-        public override bool OnTouchEvent(MotionEvent e)
-        {
-            float x = e.GetX();
-            float y = e.GetY();
+            case MotionEventActions.Move:
+                float deltaX = Math.Abs(startX - x);
+                float deltaY = Math.Abs(startY - y);
 
-            switch (e.ActionMasked)
-            {
-                case MotionEventActions.Down:
-                    isPressedAndIdle = true;
-                    startX = x;
-                    startY = y;
-                    _host.AnimationStart(x, y);
-                    break;
-
-                case MotionEventActions.Move:
-                    float deltaX = Math.Abs(startX - x);
-                    float deltaY = Math.Abs(startY - y);
-
-                    if (deltaX > _touchSlop || deltaY > _touchSlop)
-                    {
-                        isPressedAndIdle = false;
-                        _host.AnimationFinish(false);
-                    }
-                    break;
-
-                case MotionEventActions.Up:
-                    _host.AnimationFinish(isPressedAndIdle);
+                if (deltaX > _touchSlop || deltaY > _touchSlop)
+                {
                     isPressedAndIdle = false;
-                    break;
-
-                case MotionEventActions.Cancel:
                     _host.AnimationFinish(false);
-                    isPressedAndIdle = false;
-                    break;
+                }
+                break;
 
-                default:
-                    break;
-            }
+            case MotionEventActions.Up:
+                _host.AnimationFinish(isPressedAndIdle);
+                isPressedAndIdle = false;
+                break;
 
-            return true;
+            case MotionEventActions.Cancel:
+                _host.AnimationFinish(false);
+                isPressedAndIdle = false;
+                break;
+
+            default:
+                break;
         }
+
+        return true;
     }
 }

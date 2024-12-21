@@ -1,15 +1,22 @@
-﻿using DataGridSam.Handlers;
-using DataGridSam.Internal;
-using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Platform;
+﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading.Tasks;
 using System.Windows.Input;
-using static System.Net.Mime.MediaTypeNames;
+using DataGridSam.Internal;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Platform;
 
 namespace DataGridSam;
 
@@ -485,9 +492,9 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     internal void TryUpdateRowsTapSelectColor()
     {
 #if ANDROID
-        if (isInitialized && _collection.Handler is DGCollectionHandler handler)
+        if (isInitialized && _collection.Handler is IDGCollectionHandler handler)
         {
-            handler.UpdateTapSelectColor(TapSelectedColor);
+            handler.UpdateNativeTapColor(TapSelectedColor);
         }
 #endif
     }

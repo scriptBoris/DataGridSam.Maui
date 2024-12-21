@@ -1,15 +1,18 @@
-﻿using DataGridSam.Extensions;
-using DataGridSam.Internal;
-using Microsoft.Maui.Animations;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Layouts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataGridSam.Extensions;
+using DataGridSam.Internal;
+using Microsoft.Maui;
+using Microsoft.Maui.Animations;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace DataGridSam;
 
@@ -492,14 +495,4 @@ public static class VisualExtensions
                 fromColor.Blue + t * (toColor.Blue - fromColor.Blue),
                 fromColor.Alpha + t * (toColor.Alpha - fromColor.Alpha));
     }
-
-    //public static Color MixColor(this Color fromColor, Color toColor, float progress)
-    //{
-    //    float r = fromColor.Red + (toColor.Red - fromColor.Red) * progress;
-    //    float g = fromColor.Green + (toColor.Green - fromColor.Green) * progress;
-    //    float b = fromColor.Blue + (toColor.Blue - fromColor.Blue) * progress;
-    //    float a = fromColor.Alpha + (toColor.Alpha - fromColor.Alpha) * progress;
-
-    //    return new Color(r, g, b, a);
-    //}
 }

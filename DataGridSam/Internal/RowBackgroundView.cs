@@ -1,67 +1,68 @@
-﻿using SkiaSharp;
-using SkiaSharp.Views.Maui;
-using SkiaSharp.Views.Maui.Controls;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Graphics;
+using SkiaSharp;
+using SkiaSharp.Views.Maui;
+using SkiaSharp.Views.Maui.Controls;
 
-namespace DataGridSam.Internal
+namespace DataGridSam.Internal;
+
+internal class RowBackgroundView : SKCanvasView
 {
-    internal class RowBackgroundView : SKCanvasView
+    private float spacing;
+    private float[]? widths;
+    private Color?[]? cellColors;
+    private Color? mainColor;
+
+    protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
-        private float spacing;
-        private float[]? widths;
-        private Color?[]? cellColors;
-        private Color? mainColor;
+        base.OnPaintSurface(e);
 
-        protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+        var info = e.Info;
+        var canvas = e.Surface.Canvas;
+        canvas.Clear();
+
+        if (widths == null || cellColors == null || mainColor == null)
+            return;
+
+        using var paintMain = new SKPaint
         {
-            base.OnPaintSurface(e);
+            Color = mainColor.ToSKColor(),
+        };
+        canvas.DrawRect(0, 0, info.Width, info.Height, paintMain);
+        canvas.Save();
 
-            var info = e.Info;
-            var canvas = e.Surface.Canvas;
-            canvas.Clear();
+        float x = 0;
+        for(int i = 0; i < widths.Length; i++)
+        {
+            var color = cellColors[i];
+            float w = widths[i];
+            float h = info.Height;
 
-            if (widths == null || cellColors == null || mainColor == null)
-                return;
-
-            using var paintMain = new SKPaint
+            if (color != null)
             {
-                Color = mainColor.ToSKColor(),
-            };
-            canvas.DrawRect(0, 0, info.Width, info.Height, paintMain);
-            canvas.Save();
-
-            float x = 0;
-            for(int i = 0; i < widths.Length; i++)
-            {
-                var color = cellColors[i];
-                float w = widths[i];
-                float h = info.Height;
-
-                if (color != null)
+                using var paint = new SKPaint
                 {
-                    using var paint = new SKPaint
-                    {
-                        Color = color.ToSKColor(),
-                    };
-                    canvas.DrawRect(x, 0, w, h, paint);
-                }
-                x += w + spacing;
+                    Color = color.ToSKColor(),
+                };
+                canvas.DrawRect(x, 0, w, h, paint);
             }
+            x += w + spacing;
         }
+    }
 
-        internal void Redraw(float spacing, float[] widths, Color mainColor, Color?[] cellColors)
-        {
-            spacing = (float)(spacing * DeviceDisplay.Current.MainDisplayInfo.Density);
-            Console.WriteLine($"skiaBG spacing :: {spacing}");
-            this.spacing = spacing;
-            this.widths = widths;
-            this.mainColor = mainColor;
-            this.cellColors = cellColors;
-            this.InvalidateSurface();
-        }
+    internal void Redraw(float spacing, float[] widths, Color mainColor, Color?[] cellColors)
+    {
+        spacing = (float)(spacing * DeviceDisplay.Current.MainDisplayInfo.Density);
+        Console.WriteLine($"skiaBG spacing :: {spacing}");
+        this.spacing = spacing;
+        this.widths = widths;
+        this.mainColor = mainColor;
+        this.cellColors = cellColors;
+        this.InvalidateSurface();
     }
 }

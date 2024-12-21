@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataGridSam
+namespace DataGridSam;
+
+public interface INotifyPropertyChangedFast : INotifyPropertyChanged
 {
-    public interface INotifyPropertyChangedFast : INotifyPropertyChanged
-    {
-        object? GetPropertyValue(string path);
-    }
+    object? GetPropertyValue(string path);
 }
