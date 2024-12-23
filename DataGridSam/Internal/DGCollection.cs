@@ -13,7 +13,7 @@ namespace DataGridSam.Internal;
 public class DGCollection : CollectionView
 {
     private readonly DataGrid _dataGrid;
-    private readonly RowTemplateGenerator _generator = new();
+    private readonly RowTemplateGenerator _generator;
     private readonly List<Row> _visibleRows = new();
     private Color _borderColor = Colors.Black;
     private double _borderThickness = 1;
@@ -22,7 +22,9 @@ public class DGCollection : CollectionView
 
     public DGCollection(DataGrid dataGrid)
     {
-        this._dataGrid = dataGrid;
+        _dataGrid = dataGrid;
+        _generator = new RowTemplateGenerator(dataGrid, this);
+        BackgroundColor = Colors.Black;
     }
 
     public double VisibleHeight { get; private set; }
@@ -32,9 +34,9 @@ public class DGCollection : CollectionView
         get => _borderColor;
         set
         {
-            _borderColor = value;
-            if (Handler is IDGCollectionHandler hand)
-                hand.UpdateBorderColor();
+            _borderColor = Colors.Green;
+            foreach (var row in _visibleRows)
+                row.UpdateBorderColor();
         }
     }
 
@@ -44,10 +46,12 @@ public class DGCollection : CollectionView
         set
         {
             _borderThickness = value;
-            if (Handler is IDGCollectionHandler hand)
-                hand.UpdateBorderWidth();
+            foreach (var row in _visibleRows)
+                row.UpdateBorderThickness();
         }
     }
+
+    public Row LastRow { get; internal set; }
 
     public void OnVisibleHeight(double height)
     {
@@ -59,7 +63,8 @@ public class DGCollection : CollectionView
     {
         BorderColor = _dataGrid.BordersColor;
         BorderThickness = _dataGrid.BordersThickness;
-        ItemTemplate = _generator.Generate(_dataGrid);
+        _generator.Recalc();
+        ItemTemplate = _generator.RowTemplate;
     }
 
     internal void UpdateCellsVisual(bool needRecalcMeasure)

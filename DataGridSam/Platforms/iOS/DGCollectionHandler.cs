@@ -30,14 +30,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
         return res;
     }
 
-    public void UpdateBorderColor()
-    {
-    }
-
-    public void UpdateBorderWidth()
-    {
-    }
-
     public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
     {
         return null;
@@ -45,6 +37,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 
     public void UpdateNativeTapColor(Color color)
     {
-        // todo сделать нативный эффект нажатия на строку
+        // todo сделать нативный эффект нажатия на строку? (ios)
     }
 }

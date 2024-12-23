@@ -12,41 +12,55 @@ namespace DataGridSam.Internal;
 
 internal class RowTemplateGenerator
 {
-    internal DataTemplate Generate(DataGrid dataGrid)
+    private readonly DataGrid _dataGrid;
+    private readonly DGCollection _dGCollection;
+    private List<IDataTrigger> _triggers = new();
+
+    internal RowTemplateGenerator(DataGrid dataGrid, DGCollection dGCollection)
     {
-        int totalTriggerCount = dataGrid.RowTriggers.Count;
-        var columns = dataGrid.Columns;
+        _dataGrid = dataGrid;
+        _dGCollection = dGCollection;
+    }
+
+    public DataTemplate? RowTemplate { get; set; }
+
+    internal void Recalc()
+    {
+        int totalTriggerCount = _dataGrid.RowTriggers.Count;
+        var columns = _dataGrid.Columns;
 
         // triggers
-        var triggers = new List<IDataTrigger>();
-        triggers.AddRange(dataGrid.RowTriggers);
+        _triggers = new List<IDataTrigger>();
+        _triggers.AddRange(_dataGrid.RowTriggers);
 
         for (int i = 0; i < columns.Count; i++)
         {
             var col = columns[i];
-            foreach(var t in col.CellTriggers)
+            foreach (var t in col.CellTriggers)
                 ((IDataTrigger)t).CellTriggerId = i;
 
-            triggers.AddRange(col.CellTriggers);
+            _triggers.AddRange(col.CellTriggers);
         }
 
-        triggers.InitTriggers(dataGrid);
+        _triggers.InitTriggers(_dataGrid);
 
-        var template = new DataTemplate();
-        template.LoadTemplate = () =>
+        RowTemplate ??= new DataTemplate
         {
-            try
-            {
-                var row = new Row(dataGrid, triggers);
-                return row;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("DataGrid::RowGenerator: " + ex.ToString());
-                return null;
-            }
+            LoadTemplate = GenereateRow,
         };
+    }
 
-        return template;
+    internal object GenereateRow()
+    {
+        try
+        {
+            var row = new Row(_dataGrid, _dGCollection, _triggers);
+            return row;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine("DataGrid::RowGenerator: " + ex.ToString());
+            return null;
+        }
     }
 }

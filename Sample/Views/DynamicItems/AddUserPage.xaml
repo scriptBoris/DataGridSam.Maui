@@ -10,7 +10,7 @@
         <DataTrigger Binding="{Binding IsEditMode}"
                      TargetType="ContentPage"
                      Value="True">
-            <Setter Property="Title" Value="Edit user" />
+            <Setter Property="Title" Value="Edit user"/>
         </DataTrigger>
     </ContentPage.Triggers>
 
@@ -19,47 +19,47 @@
               RowDefinitions="Auto, Auto, Auto, Auto, Auto"
               RowSpacing="10">
 
-            <Label Text="First name"
-                   VerticalTextAlignment="Center" />
+            <Label VerticalTextAlignment="Center"
+                   Text="First name"/>
             <Entry Grid.Column="1"
                    Placeholder="First name"
-                   Text="{Binding FirstName}" />
+                   Text="{Binding FirstName}"/>
 
 
             <Label Grid.Row="1"
-                   Text="Last name"
-                   VerticalTextAlignment="Center" />
+                   VerticalTextAlignment="Center"
+                   Text="Last name"/>
             <Entry Grid.Row="1"
                    Grid.Column="1"
                    Placeholder="Last name"
-                   Text="{Binding LastName}" />
+                   Text="{Binding LastName}"/>
 
             <Label Grid.Row="2"
-                   Text="Birthday"
-                   VerticalTextAlignment="Center" />
+                   VerticalTextAlignment="Center"
+                   Text="Birthday"/>
             <DatePicker Grid.Row="2"
                         Grid.Column="1"
-                        Date="{Binding Birthday}" />
+                        Date="{Binding Birthday}"/>
 
             <Label Grid.Row="3"
-                   Text="Index"
-                   VerticalTextAlignment="Center" />
+                   VerticalTextAlignment="Center"
+                   Text="Index"/>
             <Entry Grid.Row="3"
                    Grid.Column="1"
                    Keyboard="Numeric"
                    Placeholder="Index"
-                   Text="{Binding Index}" />
+                   Text="{Binding Index}"/>
 
 
             <Label Grid.Row="4"
-                   Text="Rank"
-                   VerticalTextAlignment="Center" />
+                   VerticalTextAlignment="Center"
+                   Text="Rank"/>
 
             <Button Grid.Row="4"
                     Grid.Column="1"
-                    Command="{Binding CommandSelectRank}"
                     HorizontalOptions="FillAndExpand"
-                    Text="{Binding Rank}" />
+                    Command="{Binding CommandSelectRank}"
+                    Text="{Binding Rank}"/>
         </Grid>
 
         <Button Margin="0,15,0,0"
@@ -70,7 +70,20 @@
                 <DataTrigger Binding="{Binding IsEditMode}"
                              TargetType="Button"
                              Value="True">
-                    <Setter Property="Text" Value="Complete edit" />
+                    <Setter Property="Text" Value="Complete edit"/>
+                </DataTrigger>
+            </Button.Triggers>
+        </Button>
+
+        <Button Margin="0,15,0,0"
+                Command="{Binding CommandDelete}"
+                IsVisible="False"
+                Text="Delete">
+            <Button.Triggers>
+                <DataTrigger Binding="{Binding IsEditMode}"
+                             TargetType="Button"
+                             Value="True">
+                    <Setter Property="IsVisible" Value="True"/>
                 </DataTrigger>
             </Button.Triggers>
         </Button>

@@ -9,8 +9,6 @@ namespace DataGridSam.Internal;
 
 public interface IDGCollectionHandler
 {
-    void UpdateBorderColor();
-    void UpdateBorderWidth();
     void UpdateNativeTapColor(Color color);
     Task<Row?> GetRowAsync(int index, TimeSpan? timeout);
 }

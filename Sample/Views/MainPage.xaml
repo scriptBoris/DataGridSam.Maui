@@ -7,31 +7,31 @@
     <ScrollView>
         <VerticalStackLayout Spacing="10">
             <Button Clicked="Button_Clicked"
-                    Text="Sample" />
+                    Text="Sample"/>
 
             <Button Clicked="Button_Clicked_1"
-                    Text="Default MAUI Collection (for compare)" />
+                    Text="Default MAUI Collection (for compare)"/>
 
             <Button Clicked="Button_Clicked_2"
-                    Text="Triggers" />
+                    Text="Triggers"/>
 
             <Button Clicked="Button_Clicked_3"
-                    Text="Colorized columns" />
+                    Text="Colorized columns"/>
 
             <Button Clicked="Button_Clicked_4"
-                    Text="Colorized columns and triggers" />
+                    Text="Colorized columns and triggers"/>
 
             <Button Clicked="Button_Clicked_6"
-                    Text="Custom cells" />
+                    Text="Custom cells"/>
 
             <Button Clicked="Button_Clicked_5"
-                    Text="Dynamic items" />
+                    Text="Dynamic items"/>
 
             <Button Clicked="Button_Clicked_7"
-                    Text="Dynamic columns" />
+                    Text="Dynamic columns"/>
 
             <Button Clicked="Button_Clicked_8"
-                    Text="Small items DataGrid" />
+                    Text="Small items DataGrid"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

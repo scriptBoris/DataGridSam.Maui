@@ -19,6 +19,7 @@ namespace DataGridSam;
 public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 {
     private readonly DataGrid _dataGrid;
+    private readonly DGCollection _collection;
     private readonly List<Cell> _cells = new();
     private readonly List<IDataTrigger> _enabledTriggers = new();
     private readonly IList<IDataTrigger> _triggers;
@@ -28,12 +29,15 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     private bool isPressed;
     private Color externalBackgroundColor = Colors.Transparent;
     private float externalBackgroundColorFill = 0;
+    private double _rowHeight = -1;
 
-    public Row(DataGrid dataGrid, IList<IDataTrigger> triggers)
+    public Row(DataGrid dataGrid, DGCollection dGCollection, IList<IDataTrigger> triggers)
     {
         _dataGrid = dataGrid;
+        _collection = dGCollection;
         _triggers = triggers;
 
+        base.BackgroundColor = dataGrid.BordersColor;
         BackgroundColor = dataGrid.CellBackgroundColor;
         Children.Add(_backgroundView);
 
@@ -246,14 +250,16 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     {
         double x = 0;
 
-        ((IView)_backgroundView).Arrange(bounds);
+        double rowHeight = _rowHeight;
+        var rowRect = new Rect(0,0, bounds.Width, rowHeight);
+        ((IView)_backgroundView).Arrange(rowRect);
         //RedrawBackground();
 
         for (int i = 0; i < _cells.Count; i++)
         {
             var cell = _cells[i];
             double w = Widths[i];
-            double h = bounds.Size.Height;
+            double h = rowHeight;
 
             var rect = new Rect(x, 0, w, h);
             ((IView)cell.View).Arrange(rect);
@@ -279,7 +285,6 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 
         ((IView)_backgroundView).Measure(widthConstraint, heightConstraint);
 
-        //int index = _dataGrid.ItemsSource?.IndexOf(BindingContext) ?? -1;
         double h = 0;
         for (int i = 0; i < _cells.Count; i++)
         {
@@ -291,6 +296,11 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             if (m.Height > h)
                 h = m.Height;
         }
+
+        _rowHeight = h;
+
+        if (_collection.LastRow != this)
+            h += _dataGrid.BordersThickness;
 
         return new Size(widthConstraint, h);
     }
@@ -434,6 +444,17 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     {
         externalBackgroundColorFill = 1 - fill;
         RedrawBackground();
+    }
+
+    public void UpdateBorderColor()
+    {
+        base.BackgroundColor = _dataGrid.BordersColor;
+    }
+
+    public void UpdateBorderThickness()
+    {
+        if (this is IView view)
+            view.InvalidateMeasure();
     }
 }
 

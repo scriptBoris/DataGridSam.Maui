@@ -2,54 +2,43 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using SkiaSharp;
+using SkiaSharp.Views.Maui;
+using SkiaSharp.Views.Maui.Controls;
 
 namespace DataGridSam.Internal;
 
-internal class Mask : Layout, ILayoutManager
+internal class Mask : SKCanvasView
 {
     private readonly DataGrid _dataGrid;
-    private readonly Rectangle _externalBorders = new();
-    private readonly List<IView> _internalBorders = new();
+    private SKPaint _externalBordersPaint;
+    private SKPaint _columnsPaint;
 
     internal Mask(DataGrid dataGrid)
     {
-        InputTransparent = true;
-
         _dataGrid = dataGrid;
-        _externalBorders.InputTransparent = true;
-        //_externalBorders.Stroke = new SolidColorBrush(Colors.Black);
-        //_externalBorders.StrokeThickness = 1;
-
-        _externalBorders.Stroke = new SolidColorBrush(dataGrid.BordersColor);
-        _externalBorders.StrokeThickness = dataGrid.BordersThickness;
-        Children.Add(_externalBorders);
+        InputTransparent = true;
+        UpdatePaints();
     }
 
     internal bool HasExternalBorders { get; set; } = true;
-
 
     internal Color? BorderColor
     {
         set
         {
-            foreach (var item in Children)
-            {
-                var v = (View)item;
-                // external
-                if (v is Rectangle box)
-                    box.Stroke = new SolidColorBrush(value);
-                // internal
-                else if (v is BoxView line)
-                    line.Color = value;
-            }
+            UpdatePaints();
+            InvalidateSurface();
         }
     }
 
@@ -57,118 +46,85 @@ internal class Mask : Layout, ILayoutManager
     {
         set
         {
-            _externalBorders.StrokeThickness = value;
-            //foreach (var item in Children)
-            //{
-            //    var v = (View)item;
-            //    // external
-            //    if (v is Rectangle f)
-            //        f.StrokeThickness = value;
-            //    // internal
-            //    else if (v is BoxView b)
-            //        b.WidthRequest = value;
-            //}
+            UpdatePaints();
+            InvalidateSurface();
         }
     }
 
-    protected override ILayoutManager CreateLayoutManager()
+    [MemberNotNull(nameof(_externalBordersPaint))]
+    [MemberNotNull(nameof(_columnsPaint))]
+    private void UpdatePaints()
     {
-        return this;
-    }
+        double den = DeviceDisplay.Current.MainDisplayInfo.Density;
+        float width = (float)(_dataGrid.BordersThickness * den);
 
-    public Size ArrangeChildren(Rect bounds)
-    {
-        if (_externalBorders is IView v)
-            v.Arrange(bounds);
+        _externalBordersPaint?.Dispose();
+        _columnsPaint?.Dispose();
 
-        double x = 0;
-        for (int i = 0; i < _internalBorders.Count; i++)
+        _externalBordersPaint = new SKPaint
         {
-            var item = _internalBorders[i];
-            double w = _dataGrid.BordersThickness;
-
-            if (i == _internalBorders.Count - 1)
-                w = 0;
-
-            x += _dataGrid.CachedWidths[i] + w;
-
-            var rect = new Rect(x, 0, w, bounds.Height);
-            item.Arrange(rect);
-        }
-
-        return bounds.Size;
-    }
-
-    public Size Measure(double widthConstraint, double heightConstraint)
-    {
-        if (_externalBorders is IView v)
-            v.Measure(widthConstraint, heightConstraint);
-
-        foreach (IView item in _internalBorders)
-            item.Measure(widthConstraint, heightConstraint);
-
-        return new Size(widthConstraint, heightConstraint);
-    }
-
-    internal void Redraw(IList<DataGridColumn> columns)
-    {
-        _internalBorders.Clear();
-        Children.Clear();
-
-        for (int i = 0; i < columns.Count; i++)
-        {
-            var view = TryCreateInternalLine();
-            Children.Add(view);
-            _internalBorders.Insert(i, view);
-        }
-
-        Children.Add(_externalBorders);
-
-        BorderColor = _dataGrid.BordersColor;
-        BorderWidth = _dataGrid.BordersThickness;
-
-        // external borders
-        //if (_externalBorders != null)
-        //{
-        //    _externalBorders.Stroke = new SolidColorBrush(bordersColor);
-        //    _externalBorders.StrokeThickness = borderWidth;
-        //    Children.Add(_externalBorders);
-        //}
-    }
-
-    internal void DrawByInsert(DataGridColumn column)
-    {
-        var view = TryCreateInternalLine();
-        Children.Add(view);
-        _internalBorders.Add(view);
-        InvalidateMeasure();
-    }
-
-    internal void DrawByRemove(int repId)
-    {
-        IView view = _internalBorders.Last();
-        _internalBorders.Remove(view);
-        Children.Remove(view);
-        InvalidateMeasure();
-    }
-
-    private View TryCreateInternalLine()
-    {
-        var line = new BoxView
-        {
-            InputTransparent = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = width,
+            Color = _dataGrid.BordersColor.ToSKColor(),
         };
 
-        return line;
+        _columnsPaint = new SKPaint
+        {
+            Style = SKPaintStyle.StrokeAndFill,
+            Color = _dataGrid.BordersColor.ToSKColor(),
+            StrokeWidth = width,
+        };
     }
 
-    internal void ThrowInvalidateArrange()
+    protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
-        ((IView)this).InvalidateArrange();
+        var cv = e.Surface.Canvas;
+        cv.Clear();
+
+        var rect = e.Info.Rect;
+
+        if (HasExternalBorders)
+        {
+            // external border
+            var offset = _externalBordersPaint.StrokeWidth / 2;
+            var adjustedRect = new SKRect(
+                rect.Left + offset,
+                rect.Top + offset,
+                rect.Right - offset,
+                rect.Bottom - offset
+            );
+
+            cv.DrawRect(adjustedRect, _externalBordersPaint);
+        }
+
+        // columns vertical lines (internal borders)
+        var cols = _dataGrid.Columns;
+        if (cols.Count <= 1)
+            return;
+
+        float den = (float)DeviceDisplay.Current.MainDisplayInfo.Density;
+        float lineWidth = _columnsPaint.StrokeWidth;
+        float lineOffset = lineWidth / 2;
+        float x = lineWidth;
+        float y0 = 0;
+        float y1 = rect.Bottom;
+        for (int i = 0; i < cols.Count - 1; i++)
+        {
+            float pos = (float)_dataGrid.CachedWidths[i] * den;
+            x += pos + lineOffset;
+            cv.DrawLine(x, y0, x, y1, _columnsPaint);
+            x += lineOffset;
+        }
     }
 
     internal void ThrowInvalidateMeasure()
     {
-        InvalidateMeasure();
+        UpdatePaints();
+        InvalidateSurface();
+    }
+
+    internal void Redraw(ObservableCollection<DataGridColumn> columns = null)
+    {
+        InvalidateSurface();
     }
 }

@@ -22,7 +22,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     protected override ListViewBase CreatePlatformView()
     {
         var res = base.CreatePlatformView();
-        Update(res);
         return res;
     }
 
@@ -40,49 +39,13 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
         return res;
     }
 
-    public void UpdateBorderColor()
+    public Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
     {
-        Update(PlatformView);
-    }
-
-    public void UpdateBorderWidth()
-    {
-        Update(PlatformView);
-    }
-
-    public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
-    {
-        // TODO Not impletened
-        return null;
-    }
-
-    private void Update(ListViewBase ls)
-    {
-        var color = Proxy.BorderColor.ToWindowsColor();
-        var width = new WThickness(0, 0, 0, Proxy.BorderThickness);
-
-        // TODO WINDOWS: Сделать удаление сепаратора для последнего элемента
-        ls.ItemContainerStyle = new Microsoft.UI.Xaml.Style(typeof(ListViewItem))
-        {
-            Setters =
-            {
-                // todo нужны ли эти сеттеры?
-                //new WSetter(ListViewItem.VerticalAlignmentProperty, WVerticalAlignment.Top),
-                //new WSetter(ListViewItem.VerticalContentAlignmentProperty, WVerticalAlignment.Top),
-                //new WSetter(ListViewItem.MarginProperty, new WThickness(0)),
-
-                new WSetter(ListViewItem.MinHeightProperty, 0),
-                new WSetter(ListViewItem.HorizontalContentAlignmentProperty, WHorizontalAlignment.Stretch),
-                new WSetter(ListViewItem.PaddingProperty, new WThickness(0)),
-                new WSetter(ListViewItem.BorderBrushProperty, color),
-                new WSetter(ListViewItem.BorderThicknessProperty, width),
-                //new WSetter(ListViewItem.ContentTemplateProperty, ct),
-            },
-        };
+        return Task.FromResult<Row?>(null);
     }
 
     public void UpdateNativeTapColor(Color color)
     {
-        // todo сделать нативный эффект нажатия на строку
+        // todo сделать нативный эффект нажатия на строку? (windows)
     }
 }

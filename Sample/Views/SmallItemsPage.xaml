@@ -5,44 +5,67 @@
              xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
              x:Class="Sample.Views.SmallItemsPage"
              x:DataType="local:SmallItemsPage"
-             Title="Small items Data Grid">
+             Title="Small items Data Grid"
+             BackgroundColor="Red">
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Command="{Binding CommandCreateUser}"
-                     Text="Create user" />
+                     Text="Create user"/>
     </ContentPage.ToolbarItems>
 
-    <sam:DataGrid x:Name="dataGrid"
-                  BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
-                  BordersThickness="5"
-                  CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
-                  CellPadding="5"
-                  CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
-                  HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
-                  HeaderFontSize="16"
-                  HeaderHorizontalAlignment="Center"
-                  HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
-                  ItemsSource="{Binding Items}"
-                  RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
-                  RowSelectedCommand="{Binding CommandSelectedRow}">
-        <sam:DataGridColumn Title="First name"
-                            PropertyName="FirstName" />
+    <StackLayout>
 
-        <sam:DataGridColumn Title="Last name"
-                            PropertyName="LastName" />
+        <sam:DataGrid x:Name="dataGrid"
+                      BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                      BordersThickness="5"
+                      CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                      CellPadding="5"
+                      CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                      HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                      HeaderFontSize="16"
+                      HeaderHorizontalAlignment="Center"
+                      HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
+                      IsClippedToBounds="False"
+                      ItemsSource="{Binding Items}"
+                      RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
+                      RowSelectedCommand="{Binding CommandSelectedRow}">
+            <sam:DataGridColumn Title="First name"
+                                PropertyName="FirstName"/>
 
-        <sam:DataGridColumn Title="Birth date"
-                            Width="100"
-                            CellHorizontalTextAlignment="End"
-                            PropertyName="BirthDate"
-                            StringFormat="{}{0:dd.MM.yyyy}">
-            <sam:DataGridColumn.CellPadding>
-                <OnPlatform x:TypeArguments="Thickness"
-                            Default="5">
-                    <On Platform="WinUI"
-                        Value="5, 5, 15, 5" />
-                </OnPlatform>
-            </sam:DataGridColumn.CellPadding>
-        </sam:DataGridColumn>
-    </sam:DataGrid>
+            <sam:DataGridColumn Title="Last name"
+                                PropertyName="LastName"/>
+
+            <sam:DataGridColumn Title="Birth date"
+                                Width="100"
+                                CellHorizontalTextAlignment="End"
+                                PropertyName="BirthDate"
+                                StringFormat="{}{0:dd.MM.yyyy}">
+                <sam:DataGridColumn.CellPadding>
+                    <OnPlatform x:TypeArguments="Thickness"
+                                Default="5">
+                        <On Platform="WinUI"
+                            Value="5, 5, 15, 5"/>
+                    </OnPlatform>
+                </sam:DataGridColumn.CellPadding>
+            </sam:DataGridColumn>
+        </sam:DataGrid>
+
+        <!--test-->
+        <BoxView HeightRequest="{Binding Source={x:Reference slider}, Path=Value}"
+                 Color="Black"/>
+        <StackLayout Padding="15"
+                     BackgroundColor="Black">
+            <Label VerticalOptions="FillAndExpand"
+                   Text="Spacing"
+                   TextColor="White"/>
+
+            <Slider x:Name="slider"
+                    Maximum="500"
+                    Minimum="0"/>
+        </StackLayout>
+
+
+
+
+    </StackLayout>
 </ContentPage>

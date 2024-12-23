@@ -13,6 +13,8 @@ using Microsoft.Maui.Devices;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
 using APaint = Android.Graphics.Paint;
+using Android.Graphics.Drawables;
+using Microsoft.Maui.Platform;
 
 namespace DataGridSam.Platforms.Android;
 
@@ -27,8 +29,15 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     protected override RecyclerView CreatePlatformView()
     {
         var res = base.CreatePlatformView();
-        Update(res);
+        //UpdateItemDecorator(res);
         return res;
+    }
+
+    protected override void ConnectHandler(RecyclerView platformView)
+    {
+        base.ConnectHandler(platformView);
+        var adt = platformView.GetAdapter();
+        adt?.RegisterAdapterDataObserver(new Obs());
     }
 
     public override void SetVirtualView(IView view)
@@ -40,6 +49,9 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
             scrollListener = new ScrollListener(this);
             PlatformView.AddOnScrollListener(scrollListener);
         }
+
+        var adt = PlatformView.GetAdapter();
+        adt?.RegisterAdapterDataObserver(new Obs());
     }
 
     public virtual void OnScrolled()
@@ -59,21 +71,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
         var v = VirtualView as DGCollection;
         v?.OnVisibleHeight(res.Height);
         return res;
-    }
-
-    public void UpdateBorderColor()
-    {
-        UpdateItemDecorator();
-    }
-
-    public void UpdateBorderWidth()
-    {
-        UpdateItemDecorator();
-    }
-
-    private void Update(RecyclerView res)
-    {
-        UpdateItemDecorator(res);
     }
 
     public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)
@@ -211,6 +208,20 @@ public class ScrollListener : RecyclerView.OnScrollListener
     {
         base.OnScrolled(recyclerView, dx, dy);
         handler.OnScrolled();
+    }
+}
+
+public class Obs : RecyclerView.AdapterDataObserver
+{
+    private readonly DataGrid _dataGrid;
+
+    public Obs()
+    {
+    }
+
+    public override void OnItemRangeRemoved(int positionStart, int itemCount)
+    {
+        base.OnItemRangeRemoved(positionStart, itemCount);
     }
 }
 

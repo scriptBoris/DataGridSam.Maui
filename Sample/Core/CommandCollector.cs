@@ -75,7 +75,7 @@ namespace Sample.Core
                 if (res == null)
                     return;
 
-                await Task.Delay(400);
+                    await Task.Delay(400);
                 onCreated?.Invoke(res);
             });
             return res;

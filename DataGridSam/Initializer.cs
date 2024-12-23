@@ -18,18 +18,18 @@ public static class DataGridExt
         IsInitialized = true;
         builder.ConfigureMauiHandlers(hand =>
         {
+            hand.AddHandler(typeof(RowBackgroundView), typeof(SKCanvasViewHandler));
+            hand.AddHandler(typeof(Mask), typeof(SKCanvasViewHandler));
+
 #if ANDROID
             hand.AddHandler(typeof(DGCollection), typeof(DataGridSam.Platforms.Android.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.Android.RowHandler));
-            hand.AddHandler(typeof(RowBackgroundView), typeof(SKCanvasViewHandler));
 #elif IOS
             hand.AddHandler(typeof(DGCollection), typeof(DataGridSam.Platforms.iOS.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.iOS.RowHandler));
-            hand.AddHandler(typeof(RowBackgroundView), typeof(SKCanvasViewHandler));
 #elif WINDOWS
             hand.AddHandler(typeof(DGCollection), typeof(DataGridSam.Platforms.Windows.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.Windows.RowHandler));
-            hand.AddHandler(typeof(RowBackgroundView), typeof(SKCanvasViewHandler));
 #else
             throw new NotSupportedException("DataGridSam no support current OS");
 #endif

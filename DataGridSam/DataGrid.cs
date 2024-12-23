@@ -44,6 +44,9 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     
     public DataGrid()
     {
+        // fill and expand
+        VerticalOptions = new LayoutOptions(LayoutAlignment.Fill, true);
+
         // header
         _header = new(this);
         Children.Add(_header);
@@ -120,7 +123,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
         Colors.Black,
         propertyChanged: (b, o, n) =>
         {
-            if (b is not DataGrid self || !self.isInitialized)
+            if (b is not DataGrid self)
                 return;
 
             var color = (Color)n;
@@ -143,11 +146,15 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
         1.0,
         propertyChanged: (b, o, n) =>
         {
-            if (b is not DataGrid self || !self.isInitialized)
+            if (b is not DataGrid self)
                 return;
 
             double width = (double)n;
             self._mask.BorderWidth = width;
+
+            if (!self.isInitialized)
+                return;
+
             self._collection.BorderThickness = width;
             self._header.BorderWidth = width;
             self.UpdateCellsWidthCache(null, true);
@@ -460,6 +467,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     #endregion bindable props
 
     internal double[] CachedWidths { get; private set; } = Array.Empty<double>();
+    internal double[] CachedWidthsForMask { get; private set; } = Array.Empty<double>();
     internal float[] CachedWidthsForSkia { get; private set; } = Array.Empty<float>();
     internal IDispatcherTimer? Timer { get; set; }
 
@@ -532,7 +540,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
                 add.SetParent(this, e.NewStartingIndex);
 
                 _header.DrawByInsert(add);
-                _mask.DrawByInsert(add);
+                _mask.Redraw();
                 _collection.RestructColumns();
                 break;
 
@@ -544,15 +552,14 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
                 _header.DrawByRemove(repId);
                 _header.DrawByInsert(rep);
 
-                _mask.DrawByRemove(repId);
-                _mask.DrawByInsert(rep);
+                _mask.Redraw();
                 _collection.RestructColumns();
                 break;
 
             case NotifyCollectionChangedAction.Remove:
                 int removeIndex = e.OldStartingIndex;
                 _header.DrawByRemove(removeIndex);
-                _mask.DrawByRemove(removeIndex);
+                _mask.Redraw();
                 _collection.RestructColumns();
                 break;
 
@@ -592,9 +599,11 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
                 vlines = 0;
 
             double freeWidth = width - vlines * BordersThickness;
+            double maskFreeWidth = _mask.HasExternalBorders ? width - BordersThickness * 2 : width;
             var lengths = Columns.Select(x => x.Width).ToArray();
 
             CachedWidths = Row.CalculateWidthRules(lengths, freeWidth);
+            CachedWidthsForMask = Row.CalculateWidthRules(lengths, maskFreeWidth);
             CachedWidthsForSkia = CachedWidths
                 .Select(x => (float)(x * DeviceDisplay.Current.MainDisplayInfo.Density))
                 .ToArray();
@@ -624,57 +633,101 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 
         // head
         double heightHeadCache = _header.DesiredSize.Height;
-        double headHeight = heightHeadCache + y;
         ((IView)_header).Arrange(new Rect(x, y, w, heightHeadCache));
+
+        y += heightHeadCache;
+
+        //if (_mask.HasExternalBorders)
+        //    y += BordersThickness;
 
         // collection
         double collectionHeight = _collection.DesiredSize.Height;
-        ((IView)_collection).Arrange(new Rect(x, headHeight, w, collectionHeight));
+        ((IView)_collection).Arrange(new Rect(x, y, w, collectionHeight));
 
         // mask
-        double maskHeight = headHeight + collectionHeight;
-        ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, maskHeight));
+        double maskHeight = heightHeadCache + collectionHeight;
+        ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, maskHeight + 10));
 
         return bounds.Size;
     }
 
+    //public Size Measure(double widthConstraint, double heightConstraint)
+    //{
+    //    double h = double.IsInfinity(heightConstraint) ? 200 : heightConstraint;
+    //    double w = double.IsInfinity(widthConstraint) ? 300 : widthConstraint;
+
+    //    if (_mask.HasExternalBorders)
+    //    {
+    //        h -= BordersThickness * 2;
+    //        w -= BordersThickness * 2;
+    //    }
+
+    //    UpdateCellsWidthCache(w, false);
+
+    //    // head
+    //    var mhead = ((IView)_header).Measure(w, double.PositiveInfinity);
+
+    //    // collection
+    //    double freeSpaceH = h - mhead.Height;
+    //    var mcollection = ((IView)_collection).Measure(w, freeSpaceH);
+
+    //    // mask
+    //    ((IView)_mask).Measure(widthConstraint, heightConstraint);
+
+    //    if (double.IsInfinity(heightConstraint))
+    //    {
+    //        h += mhead.Height + mcollection.Height;
+
+    //        // reset h
+    //        if (_mask.HasExternalBorders)
+    //            h += BordersThickness * 2;
+    //    }
+    //    else
+    //    {
+    //        h = heightConstraint;
+    //    }
+
+    //    return new Size(widthConstraint, h);
+    //}
+
     public Size Measure(double widthConstraint, double heightConstraint)
     {
-        double h = double.IsInfinity(heightConstraint) ? 0 : heightConstraint;
-        double w = double.IsInfinity(widthConstraint) ? 300 : widthConstraint;
+        double sizeWidth = double.IsInfinity(widthConstraint) ? 300 : widthConstraint;
+        double sizeHeight = double.IsInfinity(heightConstraint) ? 200 : heightConstraint;
+        double freeWidth = sizeWidth;
+        double freeHeight = sizeHeight;
 
         if (_mask.HasExternalBorders)
         {
-            h -= BordersThickness * 2;
-            w -= BordersThickness * 2;
+            freeWidth -= BordersThickness * 2;
+            freeHeight -= BordersThickness * 2;
         }
-
-        UpdateCellsWidthCache(w, false);
+        
+        // very important
+        UpdateCellsWidthCache(sizeWidth, false);
 
         // head
-        var mhead = ((IView)_header).Measure(w, double.PositiveInfinity);
+        var mhead = ((IView)_header).Measure(freeWidth, double.PositiveInfinity);
+        freeHeight -= mhead.Height;
 
         // collection
-        double freeSpaceH = h - mhead.Height;
-        var mcollection = ((IView)_collection).Measure(w, freeSpaceH);
-
-        // mask
-        ((IView)_mask).Measure(widthConstraint, heightConstraint);
-
         if (double.IsInfinity(heightConstraint))
         {
-            h += mhead.Height + mcollection.Height;
+            var mcollection = ((IView)_collection).Measure(freeWidth, double.PositiveInfinity);
+            sizeHeight = mhead.Height + mcollection.Height;
 
-            // reset h
             if (_mask.HasExternalBorders)
-                h += BordersThickness * 2;
+                sizeHeight += BordersThickness * 2;
         }
         else
         {
-            h = heightConstraint;
+            ((IView)_collection).Measure(freeWidth, freeHeight);
         }
 
-        return new Size(widthConstraint, h);
+        // mask
+        ((IView)_mask).Measure(sizeWidth, sizeHeight);
+
+        return new Size(sizeWidth, sizeHeight);
     }
 
     public void ScrollTo(object item, ScrollToPosition position = ScrollToPosition.MakeVisible, bool animate = true)

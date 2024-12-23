@@ -1,4 +1,5 @@
 using Sample.Models;
+using System;
 using System.Collections;
 using System.Windows.Input;
 
@@ -47,6 +48,7 @@ public partial class AddUserPage : ContentPage
     public bool IsEditMode { get; }
 
     public AddUserResult? CreatedResult { get; private set; }
+    public bool IsDeleted { get; private set; }
 
     public ICommand CommandSelectRank => new Command(async () =>
     {
@@ -92,6 +94,13 @@ public partial class AddUserPage : ContentPage
             }
         };
         Navigation.PopAsync();
+    });
+
+    public ICommand CommandDelete => new Command(async () =>
+    {
+        await Navigation.PopAsync();
+        await Task.Delay(200);
+        _context.Remove(_editUser);
     });
 
     public class AddUserResult
