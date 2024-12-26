@@ -166,9 +166,9 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         for (int i = 0; i < _cells.Count; i++)
             colors[i] = _cells[i].BackgroundColor?.MultiplyAlpha(1 - externalBackgroundColorFill);
 
-        float spacing = (float)_dataGrid.BordersThickness;
+        double spacing = _dataGrid.BordersThickness;
         var mainColor = BackgroundColor.MixColor(externalBackgroundColor, externalBackgroundColorFill);
-        _backgroundView.Redraw(spacing, WidthsSkia, mainColor, colors);
+        _backgroundView.Redraw(spacing, Widths, mainColor, colors);
     }
 
     internal void Refab()

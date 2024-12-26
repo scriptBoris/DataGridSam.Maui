@@ -3,66 +3,67 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using SkiaSharp;
-using SkiaSharp.Views.Maui;
-using SkiaSharp.Views.Maui.Controls;
 
 namespace DataGridSam.Internal;
 
-internal class RowBackgroundView : SKCanvasView
+internal class RowBackgroundView : GraphicsView
 {
-    private float spacing;
-    private float[]? widths;
-    private Color?[]? cellColors;
-    private Color? mainColor;
+    private double _spacing;
+    private double[]? _widths;
+    private Color?[]? _cellColors;
+    private Color? _mainColor;
 
-    protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
+    public RowBackgroundView()
     {
-        base.OnPaintSurface(e);
-
-        var info = e.Info;
-        var canvas = e.Surface.Canvas;
-        canvas.Clear();
-
-        if (widths == null || cellColors == null || mainColor == null)
-            return;
-
-        using var paintMain = new SKPaint
-        {
-            Color = mainColor.ToSKColor(),
-        };
-        canvas.DrawRect(0, 0, info.Width, info.Height, paintMain);
-        canvas.Save();
-
-        float x = 0;
-        for(int i = 0; i < widths.Length; i++)
-        {
-            var color = cellColors[i];
-            float w = widths[i];
-            float h = info.Height;
-
-            if (color != null)
-            {
-                using var paint = new SKPaint
-                {
-                    Color = color.ToSKColor(),
-                };
-                canvas.DrawRect(x, 0, w, h, paint);
-            }
-            x += w + spacing;
-        }
+        Drawable = new RowDrawable(this);
+        InputTransparent = true;
     }
 
-    internal void Redraw(float spacing, float[] widths, Color mainColor, Color?[] cellColors)
+    internal void Redraw(double spacing, double[] widths, Color mainColor, Color?[] cellColors)
     {
-        spacing = (float)(spacing * DeviceDisplay.Current.MainDisplayInfo.Density);
-        Console.WriteLine($"skiaBG spacing :: {spacing}");
-        this.spacing = spacing;
-        this.widths = widths;
-        this.mainColor = mainColor;
-        this.cellColors = cellColors;
-        this.InvalidateSurface();
+        _spacing = spacing;
+        _widths = widths;
+        _mainColor = mainColor;
+        _cellColors = cellColors;
+        Invalidate();
+    }
+
+    private class RowDrawable(RowBackgroundView _rowBackgroundView) : IDrawable
+    {
+        public void Draw(ICanvas canvas, RectF dirtyRect)
+        {
+            canvas.FillColor = Colors.Transparent;
+            canvas.FillRectangle(dirtyRect);
+
+            var widths = _rowBackgroundView._widths;
+            var cellColors = _rowBackgroundView._cellColors;
+            var mainColor = _rowBackgroundView._mainColor;
+            var spacing = (float)_rowBackgroundView._spacing;
+
+            if (widths == null || cellColors == null || mainColor == null)
+                return;
+
+            var rect = _rowBackgroundView.Frame;
+            canvas.FillColor = mainColor;
+            canvas.FillRectangle(rect);
+
+            float x = 0;
+            for (int i = 0; i < widths.Length; i++)
+            {
+                var color = cellColors[i];
+                float w = (float)widths[i];
+                float h = (float)_rowBackgroundView.Frame.Height;
+
+                if (color != null)
+                {
+                    canvas.FillColor = color;
+                    canvas.FillRectangle(x, 0, w, h);
+                }
+                x += w + spacing;
+            }
+        }
     }
 }

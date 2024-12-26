@@ -29,7 +29,7 @@ internal class DGCollection_Android : CollectionView, IDGCollection
 
         ItemsLayout = _layout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
         {
-            ItemSpacing = _dataGrid.BordersThickness,
+            ItemSpacing = 0,
         };
     }
 
@@ -59,7 +59,11 @@ internal class DGCollection_Android : CollectionView, IDGCollection
         set
         {
             _borderThickness = value;
-            _layout.ItemSpacing = value;
+            //_layout.ItemSpacing = value;
+#if ANDROID
+            if (Handler is Platforms.Android.DGCollectionHandler h)
+                h.UpdateItemSpacing(value);
+#endif
         }
     }
 

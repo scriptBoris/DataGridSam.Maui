@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using DataGridSam.Internal;
 using Microsoft.Maui.Hosting;
-using SkiaSharp.Views.Maui.Handlers;
 
 namespace DataGridSam;
 
@@ -18,9 +17,6 @@ public static class DataGridExt
         IsInitialized = true;
         builder.ConfigureMauiHandlers(hand =>
         {
-            hand.AddHandler(typeof(RowBackgroundView), typeof(SKCanvasViewHandler));
-            hand.AddHandler(typeof(Mask), typeof(SKCanvasViewHandler));
-
 #if ANDROID
             hand.AddHandler(typeof(DGCollection_Android), typeof(DataGridSam.Platforms.Android.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.Android.RowHandler));

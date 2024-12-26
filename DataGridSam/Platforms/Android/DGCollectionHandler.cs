@@ -12,6 +12,7 @@ using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Devices;
 using AView = Android.Views.View;
 using AColor = Android.Graphics.Color;
+using ARect = Android.Graphics.Rect;
 using APaint = Android.Graphics.Paint;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Platform;
@@ -22,6 +23,7 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 {
     private readonly List<GetRowRequestItem> tcsList = new();
     private ScrollListener? scrollListener;
+    private SpacingItemDecoration? _itemDecoration;
 
     private DGCollection_Android? Proxy => VirtualView as DGCollection_Android;
 
@@ -45,6 +47,20 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
             scrollListener = new ScrollListener(this);
             PlatformView.AddOnScrollListener(scrollListener);
         }
+
+        if (view is IDGCollection collection)
+        {
+            _itemDecoration = new SpacingItemDecoration(collection.BorderThickness);
+            PlatformView.AddItemDecoration(_itemDecoration);
+        }
+    }
+
+    protected override void DisconnectHandler(RecyclerView platformView)
+    {
+        if (_itemDecoration != null)
+            platformView.RemoveItemDecoration(_itemDecoration);
+
+        base.DisconnectHandler(platformView);
     }
 
     public virtual void OnScrolled()
@@ -149,6 +165,11 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
         }
     }
 
+    internal void UpdateItemSpacing(double value)
+    {
+        throw new NotImplementedException();
+    }
+
     private struct GetRowRequestItem
     {
         public TaskCompletionSource<Row?> Tsc { get; set; }
@@ -180,5 +201,33 @@ public class ScrollListener : RecyclerView.OnScrollListener
     {
         base.OnScrolled(recyclerView, dx, dy);
         handler.OnScrolled();
+    }
+}
+
+public class SpacingItemDecoration : RecyclerView.ItemDecoration
+{
+    private readonly int _verticalSpacing;
+
+    public SpacingItemDecoration(double spacing)
+    {
+        var den = global::Android.App.Application.Context.Resources?.DisplayMetrics?.Density ?? 0;
+        if (den == 0)
+            _verticalSpacing = 0;
+        else
+            _verticalSpacing = (int)(spacing * den);
+    }
+
+    public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
+    {
+        int position = parent.GetChildAdapterPosition(view);
+        if (position == RecyclerView.NoPosition) 
+            return;
+
+        if (position > 0)
+        {
+            // Отступ сверху для всех, кроме первого
+            outRect.Top = _verticalSpacing; 
+            outRect.Bottom = 0;
+        }
     }
 }
