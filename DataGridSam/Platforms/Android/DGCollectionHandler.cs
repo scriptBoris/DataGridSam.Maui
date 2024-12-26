@@ -21,23 +21,19 @@ namespace DataGridSam.Platforms.Android;
 public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 {
     private readonly List<GetRowRequestItem> tcsList = new();
-    private DividerItemDecoration? itemDecorator;
     private ScrollListener? scrollListener;
 
-    private DGCollection? Proxy => VirtualView as DGCollection;
+    private DGCollection_Android? Proxy => VirtualView as DGCollection_Android;
 
     protected override RecyclerView CreatePlatformView()
     {
         var res = base.CreatePlatformView();
-        //UpdateItemDecorator(res);
         return res;
     }
 
     protected override void ConnectHandler(RecyclerView platformView)
     {
         base.ConnectHandler(platformView);
-        var adt = platformView.GetAdapter();
-        adt?.RegisterAdapterDataObserver(new Obs());
     }
 
     public override void SetVirtualView(IView view)
@@ -49,9 +45,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
             scrollListener = new ScrollListener(this);
             PlatformView.AddOnScrollListener(scrollListener);
         }
-
-        var adt = PlatformView.GetAdapter();
-        adt?.RegisterAdapterDataObserver(new Obs());
     }
 
     public virtual void OnScrolled()
@@ -68,8 +61,8 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
     {
         var res = base.GetDesiredSize(widthConstraint, heightConstraint);
-        var v = VirtualView as DGCollection;
-        v?.OnVisibleHeight(res.Height);
+        if (Proxy != null)
+            Proxy.ViewPortHeight = res.Height;
         return res;
     }
 
@@ -143,27 +136,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
         return list;
     }
 
-    private void UpdateItemDecorator(RecyclerView? platformView = null)
-    {
-        if (Proxy == null)
-            return;
-
-        platformView ??= PlatformView;
-
-        if (itemDecorator != null)
-        {
-            platformView.RemoveItemDecoration(itemDecorator);
-            itemDecorator.Dispose();
-        }
-
-        var color = Proxy.BorderColor.ToAndroid();
-        int width = (int)(Proxy.BorderThickness * DeviceDisplay.MainDisplayInfo.Density);
-
-        itemDecorator = new DividerItemDecoration(width, color);
-
-        platformView.AddItemDecoration(itemDecorator);
-    }
-
     public void UpdateNativeTapColor(Color color)
     {
         if (Proxy == null)
@@ -208,101 +180,5 @@ public class ScrollListener : RecyclerView.OnScrollListener
     {
         base.OnScrolled(recyclerView, dx, dy);
         handler.OnScrolled();
-    }
-}
-
-public class Obs : RecyclerView.AdapterDataObserver
-{
-    private readonly DataGrid _dataGrid;
-
-    public Obs()
-    {
-    }
-
-    public override void OnItemRangeRemoved(int positionStart, int itemCount)
-    {
-        base.OnItemRangeRemoved(positionStart, itemCount);
-    }
-}
-
-public class DividerItemDecoration : RecyclerView.ItemDecoration
-{
-    private readonly APaint _paint;
-
-    public DividerItemDecoration(int width, AColor color)
-    {
-        Width = width;
-        Color = color;
-        WidthDel2 = (int)(width * 0.3f);
-
-        _paint = new()
-        {
-            Color = color,
-        };
-    }
-
-    public int Width { get; private set; }
-    public int WidthDel2 { get; private set; }
-    public AColor Color { get; private set; }
-
-    public override void OnDrawOver(global::Android.Graphics.Canvas c, RecyclerView parent, RecyclerView.State state)
-    {
-        int x = 0;// parent.PaddingLeft;
-        int right = parent.Width;// - parent.PaddingRight;
-
-        int childCount = parent.ChildCount;
-        for (int i = 0; i < childCount - 1; i++)
-        {
-            var child = parent.GetChildAt(i);
-            var parameters = (RecyclerView.LayoutParams)child.LayoutParameters;
-
-            //int top = child.Bottom + parameters.BottomMargin;
-            //_drawable.SetBounds(0, top, right, bottom);
-            //_drawable.Draw(c);
-
-            int top = child.Bottom + parameters.BottomMargin;
-            int bottom = top + Width;
-            c.DrawRect(0, top, right, bottom, _paint);
-            //c.DrawLine(0, top, right, top, _paint2);
-        }
-    }
-
-    public override void GetItemOffsets(global::Android.Graphics.Rect outRect, AView view, RecyclerView parent, RecyclerView.State state)
-    {
-        // Добавляем отступ только между элементами, а не после последнего элемента
-        outRect.Bottom = Width;
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        base.Dispose(disposing);
-        _paint.Dispose();
-    }
-
-    private class LineDrawable : global::Android.Graphics.Drawables.Drawable
-    {
-        private readonly APaint _paint;
-
-        public LineDrawable(APaint paint)
-        {
-            _paint = paint;
-        }
-
-        public override void Draw(global::Android.Graphics.Canvas canvas)
-        {
-            canvas.DrawRect(Bounds, _paint);
-        }
-
-        public override void SetAlpha(int alpha)
-        {
-            _paint.Alpha = alpha;
-        }
-
-        public override void SetColorFilter(global::Android.Graphics.ColorFilter? colorFilter)
-        {
-            _paint.SetColorFilter(colorFilter);
-        }
-
-        public override int Opacity => _paint.Alpha;
     }
 }

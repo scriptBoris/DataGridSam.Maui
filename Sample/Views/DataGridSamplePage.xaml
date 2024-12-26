@@ -22,10 +22,10 @@
                   RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
                   RowSelectedCommand="{Binding CommandSelectedRow}">
         <sam:DataGridColumn Title="First name"
-                            PropertyName="FirstName" />
+                            PropertyName="FirstName"/>
 
         <sam:DataGridColumn Title="Last name"
-                            PropertyName="LastName" />
+                            PropertyName="LastName"/>
 
         <sam:DataGridColumn Title="Birth date"
                             Width="90"
@@ -36,7 +36,7 @@
                 <OnPlatform x:TypeArguments="Thickness"
                             Default="5">
                     <On Platform="WinUI"
-                        Value="5, 5, 15, 5" />
+                        Value="5, 5, 15, 5"/>
                 </OnPlatform>
             </sam:DataGridColumn.CellPadding>
         </sam:DataGridColumn>

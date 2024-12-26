@@ -1,42 +1,55 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 
 namespace DataGridSam.Internal;
 
-public class DGCollection : CollectionView
+internal class DGCollection_Android : CollectionView, IDGCollection
 {
     private readonly DataGrid _dataGrid;
     private readonly RowTemplateGenerator _generator;
     private readonly List<Row> _visibleRows = new();
     private Color _borderColor = Colors.Black;
     private double _borderThickness = 1;
+    private double _viewPortHeight;
+    private LinearItemsLayout _layout;
 
     public event EventHandler<double>? VisibleHeightChanged;
 
-    public DGCollection(DataGrid dataGrid)
+    public DGCollection_Android(DataGrid dataGrid)
     {
         _dataGrid = dataGrid;
-        _generator = new RowTemplateGenerator(dataGrid, this);
-        BackgroundColor = Colors.Black;
+        _generator = new RowTemplateGenerator(dataGrid);
+        BackgroundColor = dataGrid.BordersColor;
+
+        ItemsLayout = _layout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
+        {
+            ItemSpacing = _dataGrid.BordersThickness,
+        };
     }
 
-    public double VisibleHeight { get; private set; }
+    public double ViewPortHeight
+    {
+        get => _viewPortHeight;
+        set
+        {
+            _viewPortHeight = value;
+            VisibleHeightChanged?.Invoke(this, value);
+        }
+    }
 
     public Color BorderColor
     {
         get => _borderColor;
         set
         {
-            _borderColor = Colors.Green;
-            foreach (var row in _visibleRows)
-                row.UpdateBorderColor();
+            _borderColor = value;
+            BackgroundColor = value;
         }
     }
 
@@ -46,20 +59,11 @@ public class DGCollection : CollectionView
         set
         {
             _borderThickness = value;
-            foreach (var row in _visibleRows)
-                row.UpdateBorderThickness();
+            _layout.ItemSpacing = value;
         }
     }
 
-    public Row LastRow { get; internal set; }
-
-    public void OnVisibleHeight(double height)
-    {
-        VisibleHeight = height;
-        VisibleHeightChanged?.Invoke(this, height);
-    }
-
-    internal void Redraw()
+    public void Redraw()
     {
         BorderColor = _dataGrid.BordersColor;
         BorderThickness = _dataGrid.BordersThickness;
@@ -67,37 +71,37 @@ public class DGCollection : CollectionView
         ItemTemplate = _generator.RowTemplate;
     }
 
-    internal void UpdateCellsVisual(bool needRecalcMeasure)
+    public void UpdateCellsVisual(bool needRecalcMeasure)
     {
         foreach (var row in _visibleRows)
             row.UpdateVisual(needRecalcMeasure);
     }
 
-    internal void UpdateCellsPadding(int? cellId)
+    public void UpdateCellsPadding(int? cellId)
     {
         foreach (var row in _visibleRows)
             row.UpdateCellPadding(cellId);
     }
 
-    internal void UpdateCellsMeasure()
+    public void UpdateCellsMeasure()
     {
         foreach (var row in _visibleRows)
             row.ThrowInvalidateMeasure();
     }
 
-    internal void RestructColumns()
+    public void RestructColumns()
     {
         foreach (var row in _visibleRows)
             row.Refab();
     }
 
-    internal void RebindColumn(int columnId)
+    public void RebindColumn(int columnId)
     {
         foreach (var row in _visibleRows)
             row.Rebind(columnId);
     }
 
-    internal async Task<Row?> GetRowFast(int indexOfItemsSource)
+    public async Task<Row?> GetRowFast(int indexOfItemsSource)
     {
         foreach (var item in _visibleRows)
         {

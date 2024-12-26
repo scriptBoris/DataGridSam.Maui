@@ -22,13 +22,13 @@ public static class DataGridExt
             hand.AddHandler(typeof(Mask), typeof(SKCanvasViewHandler));
 
 #if ANDROID
-            hand.AddHandler(typeof(DGCollection), typeof(DataGridSam.Platforms.Android.DGCollectionHandler));
+            hand.AddHandler(typeof(DGCollection_Android), typeof(DataGridSam.Platforms.Android.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.Android.RowHandler));
 #elif IOS
-            hand.AddHandler(typeof(DGCollection), typeof(DataGridSam.Platforms.iOS.DGCollectionHandler));
+            hand.AddHandler(typeof(DGCollection_iOS), typeof(DataGridSam.Platforms.iOS.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.iOS.RowHandler));
 #elif WINDOWS
-            hand.AddHandler(typeof(DGCollection), typeof(DataGridSam.Platforms.Windows.DGCollectionHandler));
+            hand.AddHandler(typeof(DGCollection_Windows), typeof(DataGridSam.Platforms.Windows.DGCollectionHandler));
             hand.AddHandler(typeof(Row), typeof(DataGridSam.Platforms.Windows.RowHandler));
 #else
             throw new NotSupportedException("DataGridSam no support current OS");

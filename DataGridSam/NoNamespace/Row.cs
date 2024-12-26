@@ -19,7 +19,6 @@ namespace DataGridSam;
 public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 {
     private readonly DataGrid _dataGrid;
-    private readonly DGCollection _collection;
     private readonly List<Cell> _cells = new();
     private readonly List<IDataTrigger> _enabledTriggers = new();
     private readonly IList<IDataTrigger> _triggers;
@@ -31,13 +30,11 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     private float externalBackgroundColorFill = 0;
     private double _rowHeight = -1;
 
-    public Row(DataGrid dataGrid, DGCollection dGCollection, IList<IDataTrigger> triggers)
+    public Row(DataGrid dataGrid, IList<IDataTrigger> triggers)
     {
         _dataGrid = dataGrid;
-        _collection = dGCollection;
         _triggers = triggers;
 
-        base.BackgroundColor = dataGrid.BordersColor;
         BackgroundColor = dataGrid.CellBackgroundColor;
         Children.Add(_backgroundView);
 
@@ -298,9 +295,6 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         }
 
         _rowHeight = h;
-
-        if (_collection.LastRow != this)
-            h += _dataGrid.BordersThickness;
 
         return new Size(widthConstraint, h);
     }

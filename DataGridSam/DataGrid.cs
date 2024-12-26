@@ -5,8 +5,6 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using DataGridSam.Internal;
@@ -24,7 +22,7 @@ namespace DataGridSam;
 public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 {
     private readonly Header _header;
-    private readonly DGCollection _collection;
+    private readonly IDGCollection _collection;
     private readonly Mask _mask;
 
     private double cachedWidth;
@@ -52,15 +50,16 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
         Children.Add(_header);
 
         // collection
-        _collection = new(this)
-        {
-            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical)
-            {
-                ItemSpacing = 0,
-            }
-        };
+#if WINDOWS
+        _collection = new DGCollection_Windows(this);
+#elif ANDROID
+        _collection = new DGCollection_Android(this);
+#elif IOS
+        _collection = new DGCollection_iOS(this);
+#else
+        throw new NotSupportedException();
+#endif
         Children.Add(_collection);
-        _collection.SetBinding(CollectionView.ItemsSourceProperty, new Binding(nameof(ItemsSource), source: this));
 
         // mask
         _mask = new(this);
@@ -107,7 +106,12 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
         nameof(ItemsSource),
         typeof(IList),
         typeof(DataGrid),
-        null
+        null,
+        propertyChanged:(b,o,n) =>
+        {
+            if (b is DataGrid self)
+                self._collection.ItemsSource = n as IList;
+        }
     );
     public IList? ItemsSource
     {
@@ -159,6 +163,8 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
             self._header.BorderWidth = width;
             self.UpdateCellsWidthCache(null, true);
             self.TryUpdateCellsVisual(true);
+            //((IView)self).InvalidateMeasure();
+            self.InvalidateMeasure();
         }
     );
     public double BordersThickness
@@ -637,16 +643,17 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 
         y += heightHeadCache;
 
-        //if (_mask.HasExternalBorders)
-        //    y += BordersThickness;
-
         // collection
         double collectionHeight = _collection.DesiredSize.Height;
         ((IView)_collection).Arrange(new Rect(x, y, w, collectionHeight));
 
         // mask
         double maskHeight = heightHeadCache + collectionHeight;
-        ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, maskHeight + 10));
+        if (_mask.HasExternalBorders)
+        {
+            maskHeight += BordersThickness * 2;
+        }
+        ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, maskHeight));
 
         return bounds.Size;
     }

@@ -13,13 +13,11 @@ namespace DataGridSam.Internal;
 internal class RowTemplateGenerator
 {
     private readonly DataGrid _dataGrid;
-    private readonly DGCollection _dGCollection;
     private List<IDataTrigger> _triggers = new();
 
-    internal RowTemplateGenerator(DataGrid dataGrid, DGCollection dGCollection)
+    internal RowTemplateGenerator(DataGrid dataGrid)
     {
         _dataGrid = dataGrid;
-        _dGCollection = dGCollection;
     }
 
     public DataTemplate? RowTemplate { get; set; }
@@ -54,7 +52,7 @@ internal class RowTemplateGenerator
     {
         try
         {
-            var row = new Row(_dataGrid, _dGCollection, _triggers);
+            var row = new Row(_dataGrid, _triggers);
             return row;
         }
         catch (Exception ex)
