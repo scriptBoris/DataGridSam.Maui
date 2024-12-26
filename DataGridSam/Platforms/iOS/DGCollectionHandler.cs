@@ -3,8 +3,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
-using DataGridSam.Internal;
 using Microsoft.Maui.Graphics;
+using DataGridSam.Internal;
 
 namespace DataGridSam.Platforms.iOS;
 
@@ -28,6 +28,15 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
         //l.MinimumLineSpacing = 2;
 
         return res;
+    }
+
+    public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+    {
+        var size = base.GetDesiredSize(widthConstraint, heightConstraint);
+        if (VirtualView is DGCollection_iOS collection)
+            collection.ViewPortHeight = size.Height;
+
+        return size;
     }
 
     public async Task<Row?> GetRowAsync(int index, TimeSpan? timeout)

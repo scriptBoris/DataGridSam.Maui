@@ -27,17 +27,6 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 
     private DGCollection_Android? Proxy => VirtualView as DGCollection_Android;
 
-    protected override RecyclerView CreatePlatformView()
-    {
-        var res = base.CreatePlatformView();
-        return res;
-    }
-
-    protected override void ConnectHandler(RecyclerView platformView)
-    {
-        base.ConnectHandler(platformView);
-    }
-
     public override void SetVirtualView(IView view)
     {
         base.SetVirtualView(view);

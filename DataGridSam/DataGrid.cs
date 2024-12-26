@@ -628,6 +628,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
         double y = 0;
         double w = bounds.Width;
         double h = bounds.Height;
+        double border1Widthh = _mask.HasExternalBorders ? BordersThickness : 0;
 
         if (_mask.HasExternalBorders)
         {
@@ -643,59 +644,23 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 
         y += heightHeadCache;
 
-        // collection
         double collectionHeight = _collection.DesiredSize.Height;
+        double maskHeight = border1Widthh + heightHeadCache + collectionHeight + border1Widthh;
+
+        if (maskHeight > bounds.Height)
+        {
+            maskHeight = bounds.Height;
+            collectionHeight = bounds.Height - (border1Widthh + heightHeadCache + border1Widthh);
+        }
+
+        // collection
         ((IView)_collection).Arrange(new Rect(x, y, w, collectionHeight));
 
         // mask
-        double maskHeight = heightHeadCache + collectionHeight;
-        if (_mask.HasExternalBorders)
-        {
-            maskHeight += BordersThickness * 2;
-        }
         ((IView)_mask).Arrange(new Rect(0, 0, bounds.Width, maskHeight));
 
         return bounds.Size;
     }
-
-    //public Size Measure(double widthConstraint, double heightConstraint)
-    //{
-    //    double h = double.IsInfinity(heightConstraint) ? 200 : heightConstraint;
-    //    double w = double.IsInfinity(widthConstraint) ? 300 : widthConstraint;
-
-    //    if (_mask.HasExternalBorders)
-    //    {
-    //        h -= BordersThickness * 2;
-    //        w -= BordersThickness * 2;
-    //    }
-
-    //    UpdateCellsWidthCache(w, false);
-
-    //    // head
-    //    var mhead = ((IView)_header).Measure(w, double.PositiveInfinity);
-
-    //    // collection
-    //    double freeSpaceH = h - mhead.Height;
-    //    var mcollection = ((IView)_collection).Measure(w, freeSpaceH);
-
-    //    // mask
-    //    ((IView)_mask).Measure(widthConstraint, heightConstraint);
-
-    //    if (double.IsInfinity(heightConstraint))
-    //    {
-    //        h += mhead.Height + mcollection.Height;
-
-    //        // reset h
-    //        if (_mask.HasExternalBorders)
-    //            h += BordersThickness * 2;
-    //    }
-    //    else
-    //    {
-    //        h = heightConstraint;
-    //    }
-
-    //    return new Size(widthConstraint, h);
-    //}
 
     public Size Measure(double widthConstraint, double heightConstraint)
     {

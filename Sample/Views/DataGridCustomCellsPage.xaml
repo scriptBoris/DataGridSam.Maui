@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Sample.Controls"
              xmlns:datagrid="clr-namespace:DataGridSam;assembly=DataGridSam"
              xmlns:local="clr-namespace:Sample.Views"
              xmlns:models="clr-namespace:Sample.Models"
-             xmlns:controls="clr-namespace:Sample.Controls"
              x:Class="Sample.Views.DataGridCustomCellsPage"
              x:DataType="local:DataGridCustomCellsPage"
              Title="Custom сells">
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Add"
-                     Command="{Binding CommandAddItem}"/>
+        <ToolbarItem Command="{Binding CommandAddItem}"
+                     Text="Add"/>
     </ContentPage.ToolbarItems>
 
-    <datagrid:DataGrid ItemsSource="{Binding Items}"
-                       RowSelectedCommand="{Binding CommandSelectedRow}"
-                       RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
+    <datagrid:DataGrid x:Name="dataGrid"
                        BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
                        BordersThickness="1"
+                       CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                       CellPadding="5"
+                       CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                       HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
                        HeaderFontSize="16"
                        HeaderHorizontalAlignment="Center"
                        HeaderTextColor="{AppThemeBinding Light=#333, Dark=#CCC}"
-                       HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
-                       CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
-                       CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
-                       CellPadding="5"
-                       x:Name="dataGrid">
-        
-        <!--name--> 
+                       ItemsSource="{Binding Items}"
+                       RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
+                       RowSelectedCommand="{Binding CommandSelectedRow}">
+
+        <!--name-->
         <datagrid:DataGridColumn Title="Name">
             <datagrid:DataGridColumn.CellTemplate>
                 <DataTemplate x:DataType="models:User">
@@ -39,7 +39,7 @@
                 </DataTemplate>
             </datagrid:DataGridColumn.CellTemplate>
         </datagrid:DataGridColumn>
-        
+
         <!--rank-->
         <datagrid:DataGridColumn Title="Rank"
                                  PropertyName="Rank"/>
@@ -47,37 +47,38 @@
         <!--birth date-->
         <datagrid:DataGridColumn Title="Birth date"
                                  Width="100"
+                                 CellHorizontalTextAlignment="End"
                                  PropertyName="BirthDate"
-                                 StringFormat="{}{0:dd.MM.yyyy}"
-                                 CellHorizontalTextAlignment="End">
+                                 StringFormat="{}{0:dd.MM.yyyy}">
             <datagrid:DataGridColumn.CellPadding>
                 <OnPlatform x:TypeArguments="Thickness">
-                    <On Platform="WinUI" Value="5, 5, 15, 5"/>
+                    <On Platform="WinUI"
+                        Value="5, 5, 15, 5"/>
                 </OnPlatform>
             </datagrid:DataGridColumn.CellPadding>
 
             <datagrid:DataGridColumn.CellTriggers>
-                <datagrid:CellTrigger PropertyName="IsOldFag"
-                                      Value="True"
-                                      BackgroundColor="Green"
+                <datagrid:CellTrigger BackgroundColor="Green"
+                                      FontAttributes="Bold"
+                                      PropertyName="IsOldFag"
                                       TextColor="Yellow"
-                                      FontAttributes="Bold"/>
+                                      Value="True"/>
             </datagrid:DataGridColumn.CellTriggers>
         </datagrid:DataGridColumn>
 
         <!--row triggers-->
         <datagrid:DataGrid.RowTriggers>
-            <datagrid:RowTrigger PropertyName="IsAdmin"
-                                 Value="True"
+            <datagrid:RowTrigger x:DataType="models:User"
                                  BackgroundColor="#833"
+                                 PropertyName="IsAdmin"
                                  TextColor="White"
-                                 x:DataType="models:User"/>
+                                 Value="True"/>
 
-            <datagrid:RowTrigger PropertyName="IsManager"
-                                 Value="True"
+            <datagrid:RowTrigger x:DataType="models:User"
                                  BackgroundColor="#225"
+                                 PropertyName="IsManager"
                                  TextColor="White"
-                                 x:DataType="models:User"/>
+                                 Value="True"/>
         </datagrid:DataGrid.RowTriggers>
     </datagrid:DataGrid>
 </ContentPage>

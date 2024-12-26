@@ -404,7 +404,16 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             case TapFinishModes.LongTap:
                 bool canLong = _dataGrid.RowLongSelectedCommand?.CanExecute(BindingContext) ?? false;
                 if (canLong)
+                {
                     _dataGrid.RowLongSelectedCommand?.Execute(BindingContext);
+
+#if IOS
+                    // Для ios здесь отменяем анимацию нажатия, т.к. возможен переход по view;
+                    // а в handler'е обработать данный кейс невозможно
+                    this.CancelAnimation();
+                    this.AnimateBackgroundColorRestore(400);
+#endif
+                }
                 break;
 
             case TapFinishModes.Cancel:
