@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -9,7 +10,7 @@ namespace DataGridSam.Extensions;
 
 internal static class ObjectExt
 {
-    private static readonly Dictionary<string, PropertyInfo[]> _propertyCache = new();
+    private static readonly Dictionary<CacheKey, CacheItem> _propertyCache = new();
 
     internal static object? GetValueFromProperty(this object? target, string? propertyPath)
     {
@@ -24,23 +25,28 @@ internal static class ObjectExt
 
     public static object? GetDeepPropertyValue(object instance, string path)
     {
-        if (!_propertyCache.TryGetValue(path, out var cachedProperties))
+        var type = instance.GetType();
+        var key = new CacheKey
         {
-            cachedProperties = BuildPropertyPathCache(instance.GetType(), path);
+            Type = type,
+            Path = path,
+        };
+
+        if (!_propertyCache.TryGetValue(key, out var cachedProperties))
+        {
+            cachedProperties = BuildPropertyPathCache(type, path);
             if (cachedProperties == null)
                 return null;
 
-            _propertyCache[path] = cachedProperties;
+            _propertyCache.Add(key, cachedProperties);
         }
 
         return GetPropertyValueFromCache(instance, cachedProperties);
     }
 
-    private static PropertyInfo[]? BuildPropertyPathCache(Type type, string path)
+    private static CacheItem? BuildPropertyPathCache(Type type, string path)
     {
-        // Изначально массив PropertyInfo выделяется с запасом
-        var properties = new PropertyInfo[path.Length / 2];
-        int count = 0;
+        CacheItem? link = null;
 
         int start = 0;
         for (int i = 0; i <= path.Length; i++)
@@ -52,18 +58,17 @@ internal static class ObjectExt
                 if (propInfo == null)
                     return null;
 
-                properties[count++] = propInfo;
+                link ??= new();
+                link.AddLast(propInfo);
                 type = propInfo.PropertyType;
                 start = i + 1;
             }
         }
 
-        // Обрезаем массив до актуального размера
-        Array.Resize(ref properties, count);
-        return properties;
+        return link;
     }
 
-    private static object? GetPropertyValueFromCache(object instance, PropertyInfo[] properties)
+    private static object? GetPropertyValueFromCache(object instance, CacheItem properties)
     {
         foreach (var propInfo in properties)
         {
@@ -72,5 +77,37 @@ internal static class ObjectExt
                 return null;
         }
         return instance;
+    }
+
+    private readonly struct CacheKey
+    {
+        public Type Type { get; init; }
+        public string Path { get; init; }
+
+        public override bool Equals([NotNullWhen(true)] object? obj)
+        {
+            if (obj is CacheKey v2)
+            {
+                return Type == v2.Type && Path == v2.Path;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Type.GetHashCode(), Path.GetHashCode());
+        }
+
+        public override string ToString()
+        {
+            return $"{Type.FullName}: {Path}";
+        }
+    }
+
+    private class CacheItem : LinkedList<PropertyInfo>
+    {
     }
 }
