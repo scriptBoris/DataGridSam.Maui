@@ -32,6 +32,9 @@
 
             <Button Clicked="Button_Clicked_8"
                     Text="Small items DataGrid"/>
+
+            <Button Clicked="Button_Clicked_9"
+                    Text="Dynamic width DataGrid"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

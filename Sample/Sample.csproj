@@ -81,7 +81,7 @@
 		</MauiXaml>
 		<MauiXaml Update="Views\DataGridDynamicColumnsPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
-		</MauiXaml>
+		</MauiXaml>	
 		<MauiXaml Update="Views\DataGridDynamicItems.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
@@ -98,6 +98,9 @@
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Views\SmallItemsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Views\DataGridDynamicWidthPage.xaml">
 			<Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 	</ItemGroup>

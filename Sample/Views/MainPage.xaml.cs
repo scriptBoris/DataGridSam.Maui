@@ -51,4 +51,9 @@ public partial class MainPage : ContentPage
     {
         Navigation.PushAsync(new SmallItemsPage());
     }
+
+    private void Button_Clicked_9(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DataGridDynamicWidthPage());
+    }
 }

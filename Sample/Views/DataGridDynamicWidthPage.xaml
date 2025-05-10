@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sam="clr-namespace:DataGridSam;assembly=DataGridSam"
+             xmlns:views="clr-namespace:Sample.Views"
+             x:Class="Sample.Views.DataGridDynamicWidthPage"
+             x:DataType="views:DataGridDynamicWidthPage"
+             Title="Dynamic items">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding CommandAddItem}"
+                     Text="Add"/>
+    </ContentPage.ToolbarItems>
+
+    <Grid RowDefinitions="*, Auto">
+
+        <!--wrapper-->
+        <views:AdjustableWidthLayout WidthScale="{Binding Source={x:Reference slider}, Path=Value}">
+
+            <sam:DataGrid x:Name="dataGird"
+                          BordersColor="{AppThemeBinding Light=#222, Dark=#888}"
+                          BordersThickness="1"
+                          CellBackgroundColor="{AppThemeBinding Light=#FFF, Dark=#333}"
+                          CellPadding="5"
+                          CellTextColor="{AppThemeBinding Light=#333, Dark=#999}"
+                          HeaderBackgroundColor="{AppThemeBinding Light=#999, Dark=#555}"
+                          HeaderFontSize="16"
+                          HeaderHorizontalAlignment="Center"
+                          HeaderTextColor="{AppThemeBinding Light=#333, Dark=#DDD}"
+                          ItemsSource="{Binding Items}"
+                          RowLongSelectedCommand="{Binding CommandLongSelectedRow}"
+                          RowSelectedCommand="{Binding CommandSelectedRow}">
+                <sam:DataGridColumn Title="First name"
+                                    PropertyName="FirstName"/>
+
+                <sam:DataGridColumn Title="Last name"
+                                    PropertyName="LastName"/>
+
+                <sam:DataGridColumn Title="Birth date"
+                                    Width="100"
+                                    CellHorizontalTextAlignment="End"
+                                    PropertyName="BirthDate"
+                                    StringFormat="{}{0:dd.MM.yyyy}">
+                    <sam:DataGridColumn.CellPadding>
+                        <OnPlatform x:TypeArguments="Thickness"
+                                    Default="5">
+                            <On Platform="WinUI"
+                                Value="5, 5, 15, 5"/>
+                        </OnPlatform>
+                    </sam:DataGridColumn.CellPadding>
+                </sam:DataGridColumn>
+            </sam:DataGrid>
+
+        </views:AdjustableWidthLayout>
+
+        <!--test-->
+        <VerticalStackLayout Grid.Row="1"
+                             Padding="15"
+                             BackgroundColor="Black">
+
+            <Label Text="DataGrid width"
+                   TextColor="White"/>
+
+            <Slider x:Name="slider"
+                    Maximum="1"
+                    Minimum="0"
+                    Value="1"/>
+        </VerticalStackLayout>
+    </Grid>
+
+</ContentPage>
