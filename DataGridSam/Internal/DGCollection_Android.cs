@@ -128,13 +128,7 @@ internal class DGCollection_Android : CollectionView, IDGCollection
     protected override Size ArrangeOverride(Rect bounds)
     {
         var size = base.ArrangeOverride(bounds);
-        return size;
-    }
-
-    protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-    {
-        //_dataGrid.UpdateCellsWidthCache(widthConstraint, false);
-        var size = new Size(widthConstraint, heightConstraint);
+        //var size = new Size(widthConstraint, heightConstraint);
         if (_cachedSize != size)
         {
             foreach (var row in _visibleRows)
@@ -143,6 +137,13 @@ internal class DGCollection_Android : CollectionView, IDGCollection
             }
         }
         _cachedSize = size;
+        return size;
+    }
+
+    protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
+    {
+        //_dataGrid.UpdateCellsWidthCache(widthConstraint, false);
+        
         var res = base.MeasureOverride(widthConstraint, heightConstraint);
         return res;
     }

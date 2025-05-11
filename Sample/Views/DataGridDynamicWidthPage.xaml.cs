@@ -81,7 +81,7 @@ public class AdjustableWidthLayout : Layout, ILayoutManager
         if (Children.Count == 1)
         {
             var children = Children[0];
-            return children.Arrange(new Rect
+            children.Arrange(new Rect
             {
                 X = 0,
                 Y = 0,
@@ -99,12 +99,10 @@ public class AdjustableWidthLayout : Layout, ILayoutManager
         if (Children.Count == 1)
         {
             var children = Children[0];
-            return children.Measure(w, heightConstraint);
+            children.Measure(w, heightConstraint);
         }
-        else
-        {
-            return base.Measure(widthConstraint, heightConstraint);
-        }
+
+        return new Size(widthConstraint, heightConstraint);
     }
 
     protected override ILayoutManager CreateLayoutManager()

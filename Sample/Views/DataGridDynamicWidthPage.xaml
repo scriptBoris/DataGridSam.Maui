@@ -12,10 +12,11 @@
                      Text="Add"/>
     </ContentPage.ToolbarItems>
 
-    <Grid RowDefinitions="*, Auto">
+    <Grid BackgroundColor="Blue"
+          RowDefinitions="*, Auto">
 
         <!--wrapper-->
-        <views:AdjustableWidthLayout BackgroundColor="Pink"
+        <views:AdjustableWidthLayout BackgroundColor="Red"
                                      WidthScale="{Binding Source={x:Reference slider}, Path=Value}">
 
             <sam:DataGrid x:Name="dataGird"

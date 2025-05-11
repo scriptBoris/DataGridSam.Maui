@@ -39,8 +39,11 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 
         if (view is IDGCollection collection)
         {
-            _itemDecoration = new SpacingItemDecoration(collection.BorderThickness);
-            PlatformView.AddItemDecoration(_itemDecoration);
+            if (collection.BorderThickness > 0)
+            {
+                _itemDecoration = new SpacingItemDecoration(collection.BorderThickness);
+                PlatformView.AddItemDecoration(_itemDecoration);
+            }
         }
     }
 
@@ -156,7 +159,24 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
 
     internal void UpdateItemSpacing(double value)
     {
-        throw new NotImplementedException();
+        if (value > 0)
+        {
+            if (_itemDecoration == null)
+            {
+                _itemDecoration = new SpacingItemDecoration(value);
+                PlatformView.AddItemDecoration(_itemDecoration);
+            }
+            else
+            {
+                _itemDecoration.Spacing = value;
+            }
+        }
+        else if (_itemDecoration != null)
+        {
+            PlatformView.RemoveItemDecoration(_itemDecoration);
+            _itemDecoration = null;
+        }
+        PlatformView.InvalidateItemDecorations();
     }
 
     private struct GetRowRequestItem
@@ -195,15 +215,27 @@ public class ScrollListener : RecyclerView.OnScrollListener
 
 public class SpacingItemDecoration : RecyclerView.ItemDecoration
 {
-    private readonly int _verticalSpacing;
+    private int _verticalSpacing;
+    private double _spacing;
 
     public SpacingItemDecoration(double spacing)
     {
-        var den = global::Android.App.Application.Context.Resources?.DisplayMetrics?.Density ?? 0;
-        if (den == 0)
-            _verticalSpacing = 0;
-        else
-            _verticalSpacing = (int)(spacing * den);
+        Spacing = spacing;
+    }
+
+    public double Spacing
+    {
+        get => _spacing;
+        set
+        {
+            _spacing = value;
+
+            var den = global::Android.App.Application.Context.Resources?.DisplayMetrics?.Density ?? 0;
+            if (den == 0)
+                _verticalSpacing = 0;
+            else
+                _verticalSpacing = (int)(_spacing * den);
+        }
     }
 
     public override void GetItemOffsets(ARect outRect, AView view, RecyclerView parent, RecyclerView.State state)
