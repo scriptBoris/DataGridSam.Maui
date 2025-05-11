@@ -12,7 +12,7 @@ internal class DGCollection_Windows : CollectionView, IDGCollection
 {
     private readonly DataGrid _dataGrid;
     private readonly RowTemplateGenerator _generator;
-    private readonly List<Row> _visibleRows = new();
+    private readonly LinkedList<Row> _visibleRows = new();
     private Color _borderColor = Colors.Black;
     private double _borderThickness = 1;
     private double _viewPortHeight;
@@ -141,7 +141,7 @@ internal class DGCollection_Windows : CollectionView, IDGCollection
             row.Refab();
         }
 
-        _visibleRows.Add(row);
+        _visibleRows.AddLast(row);
     }
 
     protected override void OnChildRemoved(Element child, int oldLogicalIndex)

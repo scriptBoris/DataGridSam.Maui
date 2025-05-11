@@ -25,7 +25,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     private readonly IDGCollection _collection;
     private readonly Mask _mask;
 
-    private double cachedWidth;
+    private double _cachedWidth;
     private bool isInitialized;
 
     public event EventHandler<ItemsViewScrolledEventArgs> Scrolled
@@ -474,7 +474,6 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 
     internal double[] CachedWidths { get; private set; } = Array.Empty<double>();
     internal double[] CachedWidthsForMask { get; private set; } = Array.Empty<double>();
-    internal float[] CachedWidthsForSkia { get; private set; } = Array.Empty<float>();
     internal IDispatcherTimer? Timer { get; set; }
 
     protected override void OnParentSet()
@@ -598,7 +597,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
     {
         double width = availableWidth ?? _collection.Width;
 
-        if (cachedWidth != width || isForce)
+        if (_cachedWidth != width || isForce)
         {
             int vlines = Columns.Count - 1;
             if (vlines < 0)
@@ -606,14 +605,10 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
 
             double freeWidth = width - vlines * BordersThickness;
             double maskFreeWidth = _mask.HasExternalBorders ? width - BordersThickness * 2 : width;
-            var lengths = Columns.Select(x => x.Width).ToArray();
 
-            CachedWidths = Row.CalculateWidthRules(lengths, freeWidth);
-            CachedWidthsForMask = Row.CalculateWidthRules(lengths, maskFreeWidth);
-            CachedWidthsForSkia = CachedWidths
-                .Select(x => (float)(x * DeviceDisplay.Current.MainDisplayInfo.Density))
-                .ToArray();
-            cachedWidth = width;
+            CachedWidths = Row.CalculateWidthRules(Columns, freeWidth);
+            CachedWidthsForMask = Row.CalculateWidthRules(Columns, maskFreeWidth);
+            _cachedWidth = width;
         }
     }
 
@@ -629,6 +624,9 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
         double w = bounds.Width;
         double h = bounds.Height;
         double border1Widthh = _mask.HasExternalBorders ? BordersThickness : 0;
+
+        // very important
+        UpdateCellsWidthCache(bounds.Width, false);
 
         if (_mask.HasExternalBorders)
         {
@@ -674,7 +672,7 @@ public class DataGrid : Layout, ILayoutManager, IHeaderCustomize
             freeWidth -= BordersThickness * 2;
             freeHeight -= BordersThickness * 2;
         }
-        
+
         // very important
         UpdateCellsWidthCache(sizeWidth, false);
 

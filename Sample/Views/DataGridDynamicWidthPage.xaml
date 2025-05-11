@@ -15,7 +15,8 @@
     <Grid RowDefinitions="*, Auto">
 
         <!--wrapper-->
-        <views:AdjustableWidthLayout WidthScale="{Binding Source={x:Reference slider}, Path=Value}">
+        <views:AdjustableWidthLayout BackgroundColor="Pink"
+                                     WidthScale="{Binding Source={x:Reference slider}, Path=Value}">
 
             <sam:DataGrid x:Name="dataGird"
                           BordersColor="{AppThemeBinding Light=#222, Dark=#888}"

@@ -59,7 +59,6 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     public Color TapColor => _dataGrid.TapSelectedColor;
 
     private double[] Widths => _dataGrid.CachedWidths;
-    private float[] WidthsSkia => _dataGrid.CachedWidthsForSkia;
     private IDispatcherTimer? Timer { get; set; }
 
     protected override void OnBindingContextChanged()
@@ -299,23 +298,23 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         return new Size(widthConstraint, h);
     }
 
-    internal static double[] CalculateWidthRules(GridLength[] viewRules, double availableWidth)
+    internal static double[] CalculateWidthRules(IReadOnlyList<DataGridColumn> viewRules, double availableWidth)
     {
-        double[] result = new double[viewRules.Length];
+        double[] result = new double[viewRules.Count];
         double totalSizeStar = 0;
         double totalSizePixel = 0;
         double freeSpace = availableWidth;
 
         // Сначала проходим по всем элементам и считаем общую сумму значений GridLength в Star и Pixel
-        for (int i = 0; i < viewRules.Length; i++)
+        for (int i = 0; i < viewRules.Count; i++)
         {
-            if (viewRules[i].IsStar)
+            if (viewRules[i].Width.IsStar)
             {
-                totalSizeStar += viewRules[i].Value;
+                totalSizeStar += viewRules[i].Width.Value;
             }
-            else if (viewRules[i].IsAbsolute)
+            else if (viewRules[i].Width.IsAbsolute)
             {
-                totalSizePixel += viewRules[i].Value;
+                totalSizePixel += viewRules[i].Width.Value;
             }
         }
 
@@ -324,19 +323,19 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
             freeSpace = 0;
 
         // Затем проходим по всем элементам и вычисляем их фактические размеры
-        for (int i = 0; i < viewRules.Length; i++)
+        for (int i = 0; i < viewRules.Count; i++)
         {
             double pixelSize = 0;
             double starSize = 0;
 
-            if (viewRules[i].IsStar)
+            if (viewRules[i].Width.IsStar)
             {
-                if (viewRules[i].Value > 0 && totalSizeStar > 0)
-                    starSize = freeSpace * (viewRules[i].Value / totalSizeStar);
+                if (viewRules[i].Width.Value > 0 && totalSizeStar > 0)
+                    starSize = freeSpace * (viewRules[i].Width.Value / totalSizeStar);
             }
-            else if (viewRules[i].IsAbsolute)
+            else if (viewRules[i].Width.IsAbsolute)
             {
-                pixelSize = viewRules[i].Value;
+                pixelSize = viewRules[i].Width.Value;
             }
 
             result[i] = pixelSize + starSize;

@@ -77,6 +77,7 @@ public class AdjustableWidthLayout : Layout, ILayoutManager
 
     public Size ArrangeChildren(Rect bounds)
     {
+        double w = bounds.Width * WidthScale;
         if (Children.Count == 1)
         {
             var children = Children[0];
@@ -84,7 +85,7 @@ public class AdjustableWidthLayout : Layout, ILayoutManager
             {
                 X = 0,
                 Y = 0,
-                Width = bounds.Width,
+                Width = w,
                 Height = bounds.Height,
             });
         }

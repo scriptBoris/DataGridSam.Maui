@@ -13,11 +13,12 @@ internal class DGCollection_Android : CollectionView, IDGCollection
 {
     private readonly DataGrid _dataGrid;
     private readonly RowTemplateGenerator _generator;
-    private readonly List<Row> _visibleRows = new();
+    private readonly LinkedList<Row> _visibleRows = new();
     private Color _borderColor = Colors.Black;
     private double _borderThickness = 1;
     private double _viewPortHeight;
     private LinearItemsLayout _layout;
+    private Size _cachedSize;
 
     public event EventHandler<double>? VisibleHeightChanged;
 
@@ -124,9 +125,24 @@ internal class DGCollection_Android : CollectionView, IDGCollection
         return null;
     }
 
+    protected override Size ArrangeOverride(Rect bounds)
+    {
+        var size = base.ArrangeOverride(bounds);
+        return size;
+    }
+
     protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
     {
-        _dataGrid.UpdateCellsWidthCache(widthConstraint, false);
+        //_dataGrid.UpdateCellsWidthCache(widthConstraint, false);
+        var size = new Size(widthConstraint, heightConstraint);
+        if (_cachedSize != size)
+        {
+            foreach (var row in _visibleRows)
+            {
+                row.ThrowInvalidateMeasure();
+            }
+        }
+        _cachedSize = size;
         var res = base.MeasureOverride(widthConstraint, heightConstraint);
         return res;
     }
@@ -142,7 +158,7 @@ internal class DGCollection_Android : CollectionView, IDGCollection
             row.Refab();
         }
 
-        _visibleRows.Add(row);
+        _visibleRows.AddLast(row);
     }
 
     protected override void OnChildRemoved(Element child, int oldLogicalIndex)
