@@ -81,4 +81,19 @@ internal static class TriggerExt
         }
         return default;
     }
+
+    internal static T? FirstNonNull<T>(this LinkedList<IDataTrigger> triggers, Func<IDataTrigger, T?> select)
+    {
+        if (triggers.Count == 0)
+            return default;
+
+        foreach (var item in triggers)
+        {
+            var res = select(item);
+
+            if (res is T t)
+                return t;
+        }
+        return default;
+    }
 }

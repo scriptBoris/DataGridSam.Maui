@@ -20,7 +20,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 {
     private readonly DataGrid _dataGrid;
     private readonly List<Cell> _cells = new();
-    private readonly List<IDataTrigger> _enabledTriggers = new();
+    private readonly LinkedList<IDataTrigger> _enabledTriggers = new();
     private readonly IList<IDataTrigger> _triggers;
     private readonly RowBackgroundView _backgroundView = new();
 
@@ -34,6 +34,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     {
         _dataGrid = dataGrid;
         _triggers = triggers;
+        CellColors = new Color[dataGrid.Columns.Count];
 
         BackgroundColor = dataGrid.CellBackgroundColor;
         Children.Add(_backgroundView);
@@ -56,6 +57,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     public TextAlignment? VerticalTextAlignment { get; private set; }
     public TextAlignment? HorizontalTextAlignment { get; private set; }
     internal bool IsRemoved { get; set; }
+    internal Color?[] CellColors { get; private set; }
     public Color TapColor => _dataGrid.TapSelectedColor;
 
     private double[] Widths => _dataGrid.CachedWidths;
@@ -130,7 +132,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
         if (isEnabled)
         {
             hasChanges = !_enabledTriggers.Contains(trigger);
-            if (hasChanges) _enabledTriggers.Add(trigger);
+            if (hasChanges) _enabledTriggers.AddLast(trigger);
         }
         else
         {
@@ -161,7 +163,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
 
     internal void RedrawBackground()
     {
-        var colors = new Color?[_cells.Count];
+        var colors = CellColors;
         for (int i = 0; i < _cells.Count; i++)
             colors[i] = _cells[i].BackgroundColor?.MultiplyAlpha(1 - externalBackgroundColorFill);
 
@@ -173,6 +175,7 @@ public class Row : Layout, ILayoutManager, IDataTriggerExecutor
     internal void Refab()
     {
         int max = Math.Max(_dataGrid.Columns.Count, _cells.Count);
+        CellColors = new Color[_dataGrid.Columns.Count];
 
         for (int i = 0; i < max; i++)
         {

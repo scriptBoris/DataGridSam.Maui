@@ -16,6 +16,7 @@ using ARect = Android.Graphics.Rect;
 using APaint = Android.Graphics.Paint;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Platform;
+using System.Runtime.Versioning;
 
 namespace DataGridSam.Platforms.Android;
 
@@ -26,6 +27,9 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
     private SpacingItemDecoration? _itemDecoration;
 
     private DGCollection_Android? Proxy => VirtualView as DGCollection_Android;
+
+    [SupportedOSPlatformGuard("android29.0")]
+    private bool IsDroid29_OrAbove => (int)global::Android.OS.Build.VERSION.SdkInt >= 29;
 
     public override void SetVirtualView(IView view)
     {
@@ -44,6 +48,24 @@ public class DGCollectionHandler : CollectionViewHandler, IDGCollectionHandler
                 _itemDecoration = new SpacingItemDecoration(collection.BorderThickness);
                 PlatformView.AddItemDecoration(_itemDecoration);
             }
+        }
+    }
+
+    protected override void ConnectHandler(RecyclerView platformView)
+    {
+        base.ConnectHandler(platformView);
+
+        if (IsDroid29_OrAbove)
+        {
+            platformView.VerticalScrollBarEnabled = true;
+            platformView.ScrollBarStyle = global::Android.Views.ScrollbarStyles.InsideOverlay;
+            platformView.ScrollbarFadingEnabled = false;
+            platformView.ScrollBarSize = 10;
+
+            platformView.VerticalScrollbarThumbDrawable =
+                AndroidX.AppCompat.Content.Res.AppCompatResources.GetDrawable(
+                    Microsoft.Maui.ApplicationModel.Platform.AppContext,
+                    Microsoft.Maui.Resource.Drawable.datagrid_scrollview_thumb);
         }
     }
 

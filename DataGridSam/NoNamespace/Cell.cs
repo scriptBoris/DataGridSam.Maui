@@ -15,7 +15,7 @@ namespace DataGridSam;
 
 public class Cell : IDataTriggerExecutor
 {
-    private readonly List<IDataTrigger> _enabledTriggers = new();
+    private readonly LinkedList<IDataTrigger> _enabledTriggers = new();
     private readonly DataGridColumn _column;
     private readonly Row _row;
 
@@ -96,28 +96,28 @@ public class Cell : IDataTriggerExecutor
                 _column.DataGrid!.CellTextColor
             );
 
-            cell.FontSize = ResolveProperty<double>(
+            cell.FontSize = ResolveProperty(
                 FontSize,
                 _row.FontSize,
                 _column.CellFontSize,
                 _column.DataGrid!.CellFontSize
             );
 
-            cell.FontAttributes = ResolveProperty<FontAttributes>(
+            cell.FontAttributes = ResolveProperty(
                 FontAttributes,
                 _row.FontAttributes,
                 _column.CellFontAttributes,
                 _column.DataGrid!.CellFontAttributes
             );
 
-            cell.VerticalTextAlignment = ResolveProperty<TextAlignment>(
+            cell.VerticalTextAlignment = ResolveProperty(
                 VerticalTextAlignment,
                 _row.VerticalTextAlignment,
                 _column.CellVerticalTextAlignment,
                 _column.DataGrid!.CellVerticalTextAlignment
             );
 
-            cell.HorizontalTextAlignment = ResolveProperty<TextAlignment>(
+            cell.HorizontalTextAlignment = ResolveProperty(
                 HorizontalTextAlignment,
                 _row.HorizontalTextAlignment,
                 _column.CellHorizontalTextAlignment,
@@ -162,7 +162,7 @@ public class Cell : IDataTriggerExecutor
         if (isEnabled)
         {
             hasChanges = !_enabledTriggers.Contains(trigger);
-            if (hasChanges) _enabledTriggers.Add(trigger);
+            if (hasChanges) _enabledTriggers.AddLast(trigger);
         }
         else
         {
@@ -180,6 +180,42 @@ public class Cell : IDataTriggerExecutor
             return v2;
         else 
             return v3;
+    }
+
+    public static double ResolveProperty(double? cellValue, double? rowValue, double? columnValue, double dataGridValue)
+    {
+        if (cellValue != null)
+            return cellValue.Value;
+        else if (rowValue != null)
+            return rowValue.Value;
+        else if (columnValue != null)
+            return columnValue.Value;
+        else
+            return dataGridValue;
+    }
+
+    public static FontAttributes ResolveProperty(FontAttributes? cellValue, FontAttributes? rowValue, FontAttributes? columnValue, FontAttributes dataGridValue)
+    {
+        if (cellValue != null)
+            return cellValue.Value;
+        else if (rowValue != null)
+            return rowValue.Value;
+        else if (columnValue != null)
+            return columnValue.Value;
+        else
+            return dataGridValue;
+    }
+
+    public static TextAlignment ResolveProperty(TextAlignment? cellValue, TextAlignment? rowValue, TextAlignment? columnValue, TextAlignment dataGridValue)
+    {
+        if (cellValue != null)
+            return cellValue.Value;
+        else if (rowValue != null)
+            return rowValue.Value;
+        else if (columnValue != null)
+            return columnValue.Value;
+        else
+            return dataGridValue;
     }
 
     public static T ResolveProperty<T>(object? cellValue, object? rowValue, object? columnValue, object dataGridValue) where T : notnull
